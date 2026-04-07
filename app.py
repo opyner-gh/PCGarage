@@ -42,13 +42,47 @@ def append_record(record: dict[str, str]) -> None:
     df_new.to_csv(CSV_PATH, mode="a", header=False, index=False)
 
 
+def format_computer_option(row: pd.Series) -> str:
+    name = str(row.get("Computer Name", "")).strip() or "Unnamed Computer"
+    created_at = str(row.get("Created At", "")).strip()
+    return f"{name} ({created_at})" if created_at else name
+
+
 def main() -> None:
     st.set_page_config(page_title="Computer Specs Tracker", layout="centered")
     st.title("Computer Specs Tracker")
-    st.write("Add a computer's hardware details and save them to a CSV file.")
+    st.write("View saved computer specs and add new computers to the CSV file.")
 
     ensure_csv_exists()
+    records = load_records()
 
+    st.subheader("Computer Viewer")
+    if records.empty:
+        st.info("No computers saved yet. Add one from the form to view details.")
+    else:
+        options = records.index.tolist()
+        selected_index = st.selectbox(
+            "Select a computer",
+            options=options,
+            format_func=lambda idx: format_computer_option(records.loc[idx]),
+        )
+        selected_record = records.loc[selected_index]
+
+        st.markdown("### Selected Computer Specifications")
+        left_col, right_col = st.columns(2)
+        with left_col:
+            st.write(f"**Computer Name:** {selected_record['Computer Name'] or '-'}")
+            st.write(f"**CPU:** {selected_record['CPU'] or '-'}")
+            st.write(f"**RAM:** {selected_record['RAM'] or '-'}")
+            st.write(f"**GPU:** {selected_record['GPU'] or '-'}")
+            st.write(f"**Storage:** {selected_record['Storage'] or '-'}")
+        with right_col:
+            st.write(f"**Motherboard:** {selected_record['Motherboard'] or '-'}")
+            st.write(f"**PSU:** {selected_record['PSU'] or '-'}")
+            st.write(f"**Created At:** {selected_record['Created At'] or '-'}")
+            st.write(f"**Notes:** {selected_record['Notes'] or '-'}")
+
+    st.subheader("Add / Save Computer")
     with st.form("computer_specs_form", clear_on_submit=True):
         computer_name = st.text_input("Computer Name *")
         cpu = st.text_input("CPU *")
@@ -84,9 +118,9 @@ def main() -> None:
             }
             append_record(record)
             st.success("Computer saved to CSV.")
+            st.rerun()
 
     st.subheader("Saved Computers")
-    records = load_records()
     if records.empty:
         st.info("No computers saved yet.")
     else:

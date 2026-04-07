@@ -1,2 +1,3 @@
 Computer Name,CPU,RAM,GPU,Storage,Motherboard,PSU,Notes,Created At
 XEON,intel xeon,64gb,quadro p4000,kingston nvme 500gb,dell precision 3630,stock,main workstation,2026-04-07T15:24:26
+RYZEN-MASTER,5600x,32gb,2070s,kingston nvme 1tb,b550-f,evga 750,sim rig,2026-04-07T16:26:28
