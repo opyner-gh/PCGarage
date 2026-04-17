@@ -20,6 +20,16 @@ CSV_COLUMNS = [
     "Notes",
     "Created At",
 ]
+EDITABLE_COLUMNS = [
+    "Computer Name",
+    "CPU",
+    "RAM",
+    "GPU",
+    "Storage",
+    "Motherboard",
+    "PSU",
+    "Notes",
+]
 
 
 def ensure_csv_exists() -> None:
@@ -40,6 +50,27 @@ def load_records() -> pd.DataFrame:
 def append_record(record: dict[str, str]) -> None:
     df_new = pd.DataFrame([record], columns=CSV_COLUMNS)
     df_new.to_csv(CSV_PATH, mode="a", header=False, index=False)
+
+
+def save_dataframe(df: pd.DataFrame) -> None:
+    ensure_csv_exists()
+    df[CSV_COLUMNS].to_csv(CSV_PATH, index=False)
+
+
+def update_record(row_index: int, fields: dict[str, str]) -> None:
+    df = load_records()
+    if row_index not in df.index:
+        raise ValueError(f"Invalid row index: {row_index}")
+    for col in EDITABLE_COLUMNS:
+        if col in fields:
+            df.loc[row_index, col] = fields[col]
+    save_dataframe(df)
+
+
+def cell_str(value: object) -> str:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return ""
+    return str(value).strip()
 
 
 def format_computer_option(row: pd.Series) -> str:
@@ -81,6 +112,76 @@ def main() -> None:
             st.write(f"**PSU:** {selected_record['PSU'] or '-'}")
             st.write(f"**Created At:** {selected_record['Created At'] or '-'}")
             st.write(f"**Notes:** {selected_record['Notes'] or '-'}")
+
+        st.markdown("#### Edit selected computer")
+        with st.form("edit_computer_form"):
+            edit_name = st.text_input(
+                "Computer Name *",
+                value=cell_str(selected_record["Computer Name"]),
+                key=f"edit_{selected_index}_name",
+            )
+            edit_cpu = st.text_input(
+                "CPU *",
+                value=cell_str(selected_record["CPU"]),
+                key=f"edit_{selected_index}_cpu",
+            )
+            edit_ram = st.text_input(
+                "RAM *",
+                value=cell_str(selected_record["RAM"]),
+                key=f"edit_{selected_index}_ram",
+            )
+            edit_gpu = st.text_input(
+                "GPU",
+                value=cell_str(selected_record["GPU"]),
+                key=f"edit_{selected_index}_gpu",
+            )
+            edit_storage = st.text_input(
+                "Storage",
+                value=cell_str(selected_record["Storage"]),
+                key=f"edit_{selected_index}_storage",
+            )
+            edit_motherboard = st.text_input(
+                "Motherboard",
+                value=cell_str(selected_record["Motherboard"]),
+                key=f"edit_{selected_index}_motherboard",
+            )
+            edit_psu = st.text_input(
+                "PSU",
+                value=cell_str(selected_record["PSU"]),
+                key=f"edit_{selected_index}_psu",
+            )
+            edit_notes = st.text_area(
+                "Notes",
+                value=cell_str(selected_record["Notes"]),
+                key=f"edit_{selected_index}_notes",
+            )
+            edit_submitted = st.form_submit_button("Save changes")
+
+        if edit_submitted:
+            required_edit = {
+                "Computer Name": edit_name.strip(),
+                "CPU": edit_cpu.strip(),
+                "RAM": edit_ram.strip(),
+            }
+            missing_edit = [label for label, value in required_edit.items() if not value]
+            if missing_edit:
+                st.error(f"Please fill in required fields: {', '.join(missing_edit)}.")
+            else:
+                update_record(
+                    selected_index,
+                    {
+                        "Computer Name": edit_name.strip(),
+                        "CPU": edit_cpu.strip(),
+                        "RAM": edit_ram.strip(),
+                        "GPU": edit_gpu.strip(),
+                        "Storage": edit_storage.strip(),
+                        "Motherboard": edit_motherboard.strip(),
+                        "PSU": edit_psu.strip(),
+                        "Notes": edit_notes.strip(),
+                    },
+                )
+                st.success("Computer updated in CSV.")
+                st.rerun()
 
     st.subheader("Add / Save Computer")
     with st.form("computer_specs_form", clear_on_submit=True):
