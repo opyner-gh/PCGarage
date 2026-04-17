@@ -232,7 +232,7 @@ def main() -> None:
     if records.empty:
         st.info("No computers saved yet.")
     else:
-        st.dataframe(records, use_container_width=True)
+        st.dataframe(records, width="stretch")
 
 
 if __name__ == "__main__":
