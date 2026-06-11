@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from datetime import datetime
 
 import pandas as pd
@@ -84,7 +85,11 @@ def render() -> None:
             options=list(range(len(computers))),
             format_func=lambda i: computers[i].get("computer_name") or "Unnamed",
         )
-        base = dict(computers[edit_index])
+        # Layer the stored record onto a complete skeleton so missing
+        # component keys never KeyError, and deepcopy so editing does not
+        # mutate the loaded list in place.
+        base = storage.empty_computer()
+        base.update(copy.deepcopy(computers[edit_index]))
     else:
         base = storage.empty_computer()
 

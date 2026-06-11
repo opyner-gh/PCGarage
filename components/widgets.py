@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pandas as pd
 import streamlit as st
 
 import storage
@@ -55,7 +56,6 @@ def render_storage_detail(drives: list[dict]) -> None:
     if not drives:
         st.caption("No drives recorded.")
         return
-    import pandas as pd
     columns = [f["key"] for f in component["fields"]]
     labels = {f["key"]: f["label"] for f in component["fields"]}
     frame = pd.DataFrame(drives).reindex(columns=columns).rename(columns=labels)
