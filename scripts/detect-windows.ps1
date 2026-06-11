@@ -27,24 +27,34 @@ if ($mem.Count -gt 0) {
     $sum = ($mem | Measure-Object -Property Capacity -Sum).Sum
     if ($sum) { $capacityGb = ConvertTo-GB $sum }
     if ($mem[0].Speed) { $speedMhz = [int]$mem[0].Speed }
-    $ddr = @{ '20' = 'DDR3'; '21' = 'DDR3'; '24' = 'DDR3'; '26' = 'DDR4'; '34' = 'DDR5' }
+    $ddr = @{ '20' = 'DDR3'; '21' = 'DDR3'; '24' = 'DDR3'; '26' = 'DDR4'; '34' = 'DDR5';
+              '29' = 'LPDDR3'; '30' = 'LPDDR4'; '35' = 'LPDDR5' }
     $ramType = [string]$ddr["$($mem[0].SMBIOSMemoryType)"]
     if ($mem.Count -gt 1) { $ramConfig = "$($mem.Count) modules" }
 }
 
-# ---- GPU ----
-$gpu = Get-CimInstance Win32_VideoController | Select-Object -First 1
+# ---- GPU (prefer a discrete adapter over an integrated one) ----
+$gpus = @(Get-CimInstance Win32_VideoController)
+$gpu = $gpus | Where-Object { $_.Name -match 'NVIDIA|GeForce|RTX|GTX|Quadro|Radeon|RX ' } | Select-Object -First 1
+if (-not $gpu) { $gpu = $gpus | Select-Object -First 1 }
 $gpuManufacturer = ''
 if ($gpu.Name -match 'NVIDIA|GeForce|RTX|GTX|Quadro') { $gpuManufacturer = 'NVIDIA' }
 elseif ($gpu.Name -match 'Radeon|AMD')                { $gpuManufacturer = 'AMD' }
 elseif ($gpu.Name -match 'Intel')                     { $gpuManufacturer = 'Intel' }
-# AdapterRAM is a signed 32-bit value that lies for cards over 4 GB; prefer the
-# registry's qwMemorySize and only fall back to AdapterRAM.
+# VRAM: AdapterRAM is a signed 32-bit value that lies for cards over 4 GB. Scan
+# the display-class registry subkeys for the one whose DriverDesc matches the
+# chosen GPU and read its 64-bit qwMemorySize; fall back to AdapterRAM.
 $vramGb = $null
-$qwKey = 'HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000'
-$qw = (Get-ItemProperty -Path $qwKey -Name 'HardwareInformation.qwMemorySize').'HardwareInformation.qwMemorySize'
-if ($qw -gt 0)                 { $vramGb = ConvertTo-GB $qw }
-elseif ($gpu.AdapterRAM -gt 0) { $vramGb = ConvertTo-GB $gpu.AdapterRAM }
+$classKey = 'HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}'
+foreach ($sub in (Get-ChildItem -Path $classKey -ErrorAction SilentlyContinue)) {
+    $props = Get-ItemProperty -Path $sub.PSPath -ErrorAction SilentlyContinue
+    if ([string]$props.DriverDesc -eq [string]$gpu.Name) {
+        $qw = $props.'HardwareInformation.qwMemorySize'
+        if ($qw -gt 0) { $vramGb = ConvertTo-GB $qw }
+        break
+    }
+}
+if ($null -eq $vramGb -and $gpu.AdapterRAM -gt 0) { $vramGb = ConvertTo-GB $gpu.AdapterRAM }
 
 # ---- Storage ----
 $drives = @()
@@ -66,7 +76,7 @@ foreach ($disk in Get-CimInstance Win32_DiskDrive) {
 # ---- Motherboard / OS / host ----
 $board  = Get-CimInstance Win32_BaseBoard | Select-Object -First 1
 $os     = Get-CimInstance Win32_OperatingSystem
-$osName = ("{0} {1}" -f $os.Caption, $os.Version).Trim()
+$osName = "$($os.Caption.Trim()) $($os.Version)".Trim()
 
 $record = [ordered]@{
     computer_name = $env:COMPUTERNAME

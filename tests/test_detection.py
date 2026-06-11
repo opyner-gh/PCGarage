@@ -103,6 +103,8 @@ def _assert_valid_detected_record(record: dict):
     assert isinstance(record["storage"], list) and record["storage"]
     # numbers came through as numbers (or None), never leftover strings
     assert record["cpu"]["cores"] is None or isinstance(record["cpu"]["cores"], int)
+    assert record["ram"]["capacity_gb"] is None or isinstance(record["ram"]["capacity_gb"], int)
+    assert record["gpu"]["vram_gb"] is None or isinstance(record["gpu"]["vram_gb"], int)
 
 
 def test_windows_fixture_matches_contract():
