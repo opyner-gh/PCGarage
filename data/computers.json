@@ -1,0 +1,90 @@
+[
+  {
+    "computer_name": "XEON",
+    "created_at": "2026-04-07T15:24:26",
+    "cpu": {
+      "manufacturer": "",
+      "model": "intel xeon",
+      "cores": null,
+      "threads": null,
+      "base_clock_ghz": null,
+      "boost_clock_ghz": null,
+      "cooler": ""
+    },
+    "ram": {
+      "manufacturer": "",
+      "capacity_gb": 64,
+      "speed_mhz": null,
+      "type": "",
+      "configuration": ""
+    },
+    "gpu": {
+      "manufacturer": "",
+      "model": "quadro p4000",
+      "vram_gb": null,
+      "brand": ""
+    },
+    "motherboard": {
+      "model": "dell precision 3630",
+      "form_factor": ""
+    },
+    "psu": {
+      "model": "stock",
+      "wattage": null
+    },
+    "storage": [
+      {
+        "manufacturer": "",
+        "model": "kingston nvme 500gb",
+        "type": "",
+        "capacity": "",
+        "form_factor": ""
+      }
+    ],
+    "notes": "main workstation"
+  },
+  {
+    "computer_name": "RYZEN-MASTER",
+    "created_at": "2026-04-07T16:26:28",
+    "cpu": {
+      "manufacturer": "",
+      "model": "5600x",
+      "cores": null,
+      "threads": null,
+      "base_clock_ghz": null,
+      "boost_clock_ghz": null,
+      "cooler": ""
+    },
+    "ram": {
+      "manufacturer": "",
+      "capacity_gb": 32,
+      "speed_mhz": null,
+      "type": "",
+      "configuration": ""
+    },
+    "gpu": {
+      "manufacturer": "",
+      "model": "2070s",
+      "vram_gb": null,
+      "brand": ""
+    },
+    "motherboard": {
+      "model": "b550-f",
+      "form_factor": ""
+    },
+    "psu": {
+      "model": "evga 750",
+      "wattage": null
+    },
+    "storage": [
+      {
+        "manufacturer": "",
+        "model": "kingston nvme 1tb",
+        "type": "",
+        "capacity": "",
+        "form_factor": ""
+      }
+    ],
+    "notes": "sim rig"
+  }
+]
