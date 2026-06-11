@@ -139,6 +139,26 @@ def test_editor_switching_records_updates_form(workspace):
     assert _field_input_value(at, "Computer Name *") == "PARTIAL"
 
 
+def test_inventory_drive_table_coerces_missing_fields(workspace):
+    # A drive dict missing some schema keys must render as blanks, not "NaN".
+    record = {
+        **storage.empty_computer(), "computer_name": "X",
+        "created_at": "2026-01-01T00:00:00",
+        "storage": [{"manufacturer": "WD", "model": "Blue"}],  # no type/capacity/ff
+    }
+    _seed(workspace, [record])
+
+    at = AppTest.from_string(INVENTORY_SCRIPT).run()
+
+    assert not at.exception
+    drive_tables = [d.value for d in at.dataframe
+                    if "Form Factor" in list(d.value.columns)]
+    assert drive_tables, "drive table not rendered"
+    df = drive_tables[0]
+    assert not df.isna().any().any()          # nothing displays as NaN
+    assert (df["Form Factor"] == "").all()     # missing cells are empty strings
+
+
 def test_editor_renders_drive_with_empty_select_values(workspace):
     # A drive whose type/form_factor are "" (migrated or newly added) must
     # render in the data_editor without error now that "" is a valid option.

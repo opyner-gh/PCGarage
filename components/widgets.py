@@ -58,5 +58,6 @@ def render_storage_detail(drives: list[dict]) -> None:
         return
     columns = [f["key"] for f in component["fields"]]
     labels = {f["key"]: f["label"] for f in component["fields"]}
-    frame = pd.DataFrame(drives).reindex(columns=columns).rename(columns=labels)
+    frame = (pd.DataFrame(drives).reindex(columns=columns)
+             .fillna("").rename(columns=labels))
     st.dataframe(frame, width="stretch", hide_index=True)
