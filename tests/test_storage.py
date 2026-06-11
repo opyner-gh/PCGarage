@@ -163,6 +163,31 @@ def test_migration_is_noop_when_csv_absent(tmp_path):
     assert not json_path.exists()  # nothing to migrate -> no JSON written
 
 
+def test_migration_ram_with_extra_tokens_preserved_as_configuration(tmp_path):
+    csv_path = tmp_path / "computers.csv"
+    json_path = tmp_path / "computers.json"
+    csv_path.write_text(
+        "Computer Name,CPU,RAM,GPU,Storage,Motherboard,PSU,Notes,Created At\n"
+        "A,cpu,2 x 16GB,gpu,,mobo,psu,note,2026-01-01T00:00:00\n"
+        "B,cpu,DDR4 3200,gpu,,mobo,psu,note,2026-01-01T00:00:00\n"
+        "C,cpu,64 GB,gpu,,mobo,psu,note,2026-01-01T00:00:00\n",
+        encoding="utf-8",
+    )
+
+    storage.migrate_csv_if_present(json_path=json_path, csv_path=csv_path)
+    a, b, c = storage.load_computers(path=json_path)
+
+    # Messy multi-token values are preserved verbatim, not mis-parsed to a
+    # stray leading/embedded integer (old _first_int gave "2 x 16GB" -> 2).
+    assert a["ram"]["capacity_gb"] is None
+    assert a["ram"]["configuration"] == "2 x 16GB"
+    assert b["ram"]["capacity_gb"] is None
+    assert b["ram"]["configuration"] == "DDR4 3200"
+    # A clean "<n> GB" capacity still parses.
+    assert c["ram"]["capacity_gb"] == 64
+    assert c["ram"]["configuration"] == ""
+
+
 def test_is_notes_present():
     assert storage.is_notes_present({"notes": "main rig"}) is True
     assert storage.is_notes_present({"notes": "   "}) is False

@@ -142,9 +142,15 @@ def update_computer(index: int, computer: dict, path: Path = JSON_PATH) -> None:
     save_computers(computers, path=path)
 
 
-def _first_int(value: str):
-    match = re.search(r"\d+", value)
-    return int(match.group()) if match else None
+def _capacity_gb(value: str):
+    """Parse a clean "<n> GB" capacity, else None.
+
+    Anchored on purpose: a multi-token legacy value like "2 x 16GB" or
+    "DDR4 3200" must be preserved verbatim as free-text configuration rather
+    than mis-parsed into a stray embedded integer.
+    """
+    match = re.fullmatch(r"(\d+)\s*gb", value.strip(), re.IGNORECASE)
+    return int(match.group(1)) if match else None
 
 
 def _row_to_computer(row: dict) -> dict:
@@ -158,7 +164,7 @@ def _row_to_computer(row: dict) -> dict:
     record["notes"] = (row.get("Notes") or "").strip()
 
     ram = (row.get("RAM") or "").strip()
-    capacity = _first_int(ram)
+    capacity = _capacity_gb(ram)
     if capacity is not None:
         record["ram"]["capacity_gb"] = capacity
     elif ram:
