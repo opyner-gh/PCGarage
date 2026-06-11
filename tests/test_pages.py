@@ -292,6 +292,5 @@ def test_inventory_renders_sparse_record(workspace):
     at = AppTest.from_string(INVENTORY_SCRIPT).run()
 
     assert not at.exception
-    captions = [c.value for c in at.caption]
-    assert any("No details recorded" in c for c in captions)
-    assert any("No drives recorded" in c for c in captions)
+    # Empty components, drives, and notes all show the same "Not recorded" note.
+    assert sum("Not recorded" in c.value for c in at.caption) >= 2

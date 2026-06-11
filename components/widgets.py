@@ -37,23 +37,27 @@ def summary_row(record: dict) -> dict:
     return row
 
 
+def card_title(icon: str, label: str) -> None:
+    """Consistent heading used for every detail card."""
+    st.markdown(f"**{icon} {label}**")
+
+
 def render_component_detail(component: dict, data: dict) -> None:
-    """Render a scalar component's filled fields under an icon heading."""
+    """Render a scalar component's filled fields as a compact card body."""
+    card_title(component["icon"], component["label"])
     filled = [(f["label"], data.get(f["key"]))
               for f in component["fields"] if is_filled(data.get(f["key"]))]
-    st.markdown(f"#### {component['icon']} {component['label']}")
     if not filled:
-        st.caption("No details recorded.")
+        st.caption("Not recorded")
         return
-    for label, value in filled:
-        st.write(f"**{label}:** {value}")
+    st.markdown("\n".join(f"- **{label}:** {value}" for label, value in filled))
 
 
 def render_storage_detail(drives: list[dict]) -> None:
     component = _component_by_key("storage")
-    st.markdown(f"#### {component['icon']} {component['label']}")
+    card_title(component["icon"], component["label"])
     if not drives:
-        st.caption("No drives recorded.")
+        st.caption("Not recorded")
         return
     columns = [f["key"] for f in component["fields"]]
     labels = {f["key"]: f["label"] for f in component["fields"]}

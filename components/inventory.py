@@ -33,23 +33,35 @@ def render() -> None:
     )
     record = computers[selected]
 
-    st.markdown(
-        f"## {storage.COMPUTER_ICON} {record.get('computer_name') or 'Unnamed Computer'}"
-    )
+    st.header(f"{storage.COMPUTER_ICON} "
+              f"{record.get('computer_name') or 'Unnamed Computer'}")
+    created = record.get("created_at")
+    if created:
+        st.caption(f"Added {created}")
+    st.divider()
 
-    left, right = st.columns(2)
-    scalar = storage.SCALAR_COMPONENTS
-    for offset, component in enumerate(scalar):
-        target = left if offset % 2 == 0 else right
-        with target:
-            widgets.render_component_detail(component, record.get(component["key"], {}))
+    # Even card grid: the five scalar components plus a Notes card fill two
+    # rows of three, so every card has the same width and consistent framing.
+    grid = [("component", component) for component in storage.SCALAR_COMPONENTS]
+    grid.append(("notes", None))
+    for start in range(0, len(grid), 3):
+        for col, (kind, component) in zip(st.columns(3), grid[start:start + 3]):
+            with col.container(border=True):
+                if kind == "component":
+                    widgets.render_component_detail(
+                        component, record.get(component["key"], {}))
+                else:
+                    widgets.card_title(storage.NOTES_ICON, "Notes")
+                    notes = record.get("notes")
+                    st.write(notes if widgets.is_filled(notes) else "")
+                    if not widgets.is_filled(notes):
+                        st.caption("Not recorded")
 
-    widgets.render_storage_detail(record.get("storage", []))
+    # Storage spans full width — its drive table needs the room.
+    with st.container(border=True):
+        widgets.render_storage_detail(record.get("storage", []))
 
-    if widgets.is_filled(record.get("notes")):
-        st.markdown(f"#### {storage.NOTES_ICON} Notes")
-        st.write(record["notes"])
-
+    st.divider()
     st.subheader("All Computers")
     table = pd.DataFrame([widgets.summary_row(c) for c in computers])
     st.dataframe(table, width="stretch", hide_index=True)
