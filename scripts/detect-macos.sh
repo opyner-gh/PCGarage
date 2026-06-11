@@ -33,14 +33,29 @@ case "$gpu_model" in
   *NVIDIA*) gpu_vendor=NVIDIA;; *Intel*) gpu_vendor=Intel;;
 esac
 
-# Storage: physical NVMe/SATA media, name + size.
+# Storage: each drive's Model paired positionally with its Capacity, tagged by
+# the profiler (bus) it came from. NVMe and SATA are queried separately so a SATA
+# drive isn't mislabelled as NVMe.
 drives=""
-sp_storage=$(system_profiler SPNVMeDataType SPSerialATADataType 2>/dev/null)
-while IFS= read -r model; do
-  [ -n "$model" ] || continue
-  row=$(printf '{"manufacturer":"","model":"%s","type":"NVMe SSD","capacity":"","form_factor":""}' "$(esc "$model")")
+emit_drives() {  # $1 = system_profiler text, $2 = drive type label
+  local models caps
+  models=$(printf '%s\n' "$1" | sed -n 's/^[[:space:]]*Model:[[:space:]]*//p')
+  caps=$(printf '%s\n' "$1" \
+         | sed -n 's/^[[:space:]]*Capacity:[[:space:]]*\([^(]*\).*/\1/p' \
+         | sed 's/[[:space:]]*$//')
+  paste -d '\t' <(printf '%s\n' "$models") <(printf '%s\n' "$caps") \
+  | while IFS=$'\t' read -r model cap; do
+      [ -n "$model" ] || continue
+      printf '{"manufacturer":"","model":"%s","type":"%s","capacity":"%s","form_factor":""}\n' \
+             "$(esc "$model")" "$2" "$(esc "$cap")"
+    done
+}
+while IFS= read -r row; do
   drives="${drives:+$drives,}$row"
-done < <(printf '%s\n' "$sp_storage" | sed -n 's/^[[:space:]]*Model:[[:space:]]*//p')
+done < <(
+  emit_drives "$(system_profiler SPNVMeDataType 2>/dev/null)" "NVMe SSD"
+  emit_drives "$(system_profiler SPSerialATADataType 2>/dev/null)" "SATA SSD"
+)
 
 json=$(cat <<EOF
 {
