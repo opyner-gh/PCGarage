@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import streamlit as st
+
 import storage
 
 
@@ -33,3 +35,28 @@ def summary_row(record: dict) -> dict:
         "Drives": len(record.get("storage", [])),
         "Created At": record.get("created_at", ""),
     }
+
+
+def render_component_detail(component: dict, data: dict) -> None:
+    """Render a scalar component's filled fields under an icon heading."""
+    filled = [(f["label"], data.get(f["key"]))
+              for f in component["fields"] if is_filled(data.get(f["key"]))]
+    st.markdown(f"#### {component['icon']} {component['label']}")
+    if not filled:
+        st.caption("No details recorded.")
+        return
+    for label, value in filled:
+        st.write(f"**{label}:** {value}")
+
+
+def render_storage_detail(drives: list[dict]) -> None:
+    component = _component_by_key("storage")
+    st.markdown(f"#### {component['icon']} {component['label']}")
+    if not drives:
+        st.caption("No drives recorded.")
+        return
+    import pandas as pd
+    columns = [f["key"] for f in component["fields"]]
+    labels = {f["key"]: f["label"] for f in component["fields"]}
+    frame = pd.DataFrame(drives).reindex(columns=columns).rename(columns=labels)
+    st.dataframe(frame, width="stretch", hide_index=True)

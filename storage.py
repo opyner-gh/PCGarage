@@ -185,3 +185,7 @@ def migrate_csv_if_present(
     computers = [_row_to_computer(row) for row in rows]
     save_computers(computers, path=json_path)
     csv_path.replace(csv_path.with_suffix(csv_path.suffix + ".bak"))
+
+
+def is_notes_present(record: dict) -> bool:
+    return bool((record.get("notes") or "").strip())
