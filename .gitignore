@@ -4,3 +4,7 @@ __pycache__/
 
 # Local data backups created by the CSV->JSON migration
 *.bak
+
+# Coverage artifacts
+.coverage
+htmlcov/

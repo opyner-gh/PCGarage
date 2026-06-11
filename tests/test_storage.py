@@ -1,3 +1,5 @@
+import pytest
+
 import storage
 
 
@@ -143,3 +145,26 @@ def test_migration_backs_up_csv(tmp_path):
 
     assert not csv_path.exists()
     assert (tmp_path / "computers.csv.bak").exists()
+
+
+def test_update_computer_invalid_index_raises(tmp_path):
+    path = tmp_path / "computers.json"
+    storage.save_computers([storage.empty_computer()], path=path)
+    with pytest.raises(IndexError):
+        storage.update_computer(5, storage.empty_computer(), path=path)
+
+
+def test_migration_is_noop_when_csv_absent(tmp_path):
+    json_path = tmp_path / "computers.json"
+    csv_path = tmp_path / "computers.csv"  # never created
+
+    storage.migrate_csv_if_present(json_path=json_path, csv_path=csv_path)
+
+    assert not json_path.exists()  # nothing to migrate -> no JSON written
+
+
+def test_is_notes_present():
+    assert storage.is_notes_present({"notes": "main rig"}) is True
+    assert storage.is_notes_present({"notes": "   "}) is False
+    assert storage.is_notes_present({"notes": ""}) is False
+    assert storage.is_notes_present({}) is False
