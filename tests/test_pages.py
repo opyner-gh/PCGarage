@@ -111,6 +111,34 @@ def test_editor_renders_edit_mode_on_partial_record(workspace):
     assert not at.exception
 
 
+def _field_input_value(at, label):
+    return next(t for t in at.text_input if t.label == label).value
+
+
+def test_editor_edit_mode_prefills_selected_record(workspace):
+    _seed(workspace, SAMPLE)
+
+    at = AppTest.from_string(EDITOR_SCRIPT).run()
+    at.radio[0].set_value("Edit existing").run()
+    at.selectbox[0].select(0).run()  # RIG-A
+
+    assert _field_input_value(at, "Computer Name *") == "RIG-A"
+    # First "Model" text input belongs to the CPU component.
+    assert _field_input_value(at, "Model") == "5600X"
+
+
+def test_editor_switching_records_updates_form(workspace):
+    _seed(workspace, SAMPLE)
+
+    at = AppTest.from_string(EDITOR_SCRIPT).run()
+    at.radio[0].set_value("Edit existing").run()
+    at.selectbox[0].select(0).run()  # RIG-A
+    assert _field_input_value(at, "Computer Name *") == "RIG-A"
+
+    at.selectbox[0].select(1).run()  # PARTIAL
+    assert _field_input_value(at, "Computer Name *") == "PARTIAL"
+
+
 def test_editor_save_requires_name(workspace):
     _seed(workspace, [])
 

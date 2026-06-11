@@ -9,9 +9,14 @@ import streamlit as st
 import storage
 
 
-def _field_input(component_key: str, field: dict, current):
-    """Render one widget for a field; return its value (None/"" when empty)."""
-    key = f"{component_key}_{field['key']}"
+def _field_input(scope: str, component_key: str, field: dict, current):
+    """Render one widget for a field; return its value (None/"" when empty).
+
+    The widget key is scoped to the record being edited so that switching
+    records rebuilds the widget and honours the new ``value``/``index`` instead
+    of retaining the previously edited record's value from session_state.
+    """
+    key = f"{scope}_{component_key}_{field['key']}"
     label = field["label"]
     if field["widget"] == "number":
         value = None if current in (None, "") else current
@@ -25,7 +30,7 @@ def _field_input(component_key: str, field: dict, current):
     return st.text_input(label, value=current or "", key=key)
 
 
-def _storage_editor(drives: list[dict]) -> list[dict]:
+def _storage_editor(scope: str, drives: list[dict]) -> list[dict]:
     component = storage.STORAGE_COMPONENT
     columns = [f["key"] for f in component["fields"]]
     labels = {f["key"]: f["label"] for f in component["fields"]}
@@ -42,24 +47,25 @@ def _storage_editor(drives: list[dict]) -> list[dict]:
 
     edited = st.data_editor(
         frame, num_rows="dynamic", width="stretch", hide_index=True,
-        column_config=column_config, key="storage_editor",
+        column_config=column_config, key=f"storage_editor_{scope}",
     )
     records = edited.fillna("").to_dict("records")
     # Drop fully-empty rows the user added but left blank.
     return [r for r in records if any(str(v).strip() for v in r.values())]
 
 
-def _collect(record: dict) -> dict:
-    record["computer_name"] = st.session_state["computer_name_input"].strip()
+def _collect(scope: str, record: dict) -> dict:
     for component in storage.SCALAR_COMPONENTS:
         with st.expander(f"{component['icon']} {component['label']}"):
             for field in component["fields"]:
                 record[component["key"]][field["key"]] = _field_input(
-                    component["key"], field, record[component["key"]].get(field["key"]))
+                    scope, component["key"], field,
+                    record[component["key"]].get(field["key"]))
     with st.expander(f"{storage.STORAGE_COMPONENT['icon']} Storage", expanded=True):
-        record["storage"] = _storage_editor(record.get("storage", []))
+        record["storage"] = _storage_editor(scope, record.get("storage", []))
     record["notes"] = st.text_area(
-        f"{storage.NOTES_ICON} Notes", value=record.get("notes", ""), key="notes_input")
+        f"{storage.NOTES_ICON} Notes", value=record.get("notes", ""),
+        key=f"notes_{scope}")
     return record
 
 
@@ -93,10 +99,15 @@ def render() -> None:
     else:
         base = storage.empty_computer()
 
-    st.text_input("Computer Name *", value=base.get("computer_name", ""),
-                  key="computer_name_input")
+    # Scope every widget key to the record being edited; otherwise Streamlit
+    # retains the previously selected record's values in session_state.
+    scope = f"edit{edit_index}" if edit_index is not None else "add"
 
-    record = _collect(base)
+    name = st.text_input("Computer Name *", value=base.get("computer_name", ""),
+                          key=f"name_{scope}")
+
+    record = _collect(scope, base)
+    record["computer_name"] = name.strip()
 
     if st.button("Save", type="primary"):
         if not record["computer_name"]:
