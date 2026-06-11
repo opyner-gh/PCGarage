@@ -4,10 +4,13 @@ Simple Streamlit app to manually track computer hardware specifications and save
 
 ## Features
 
-- Enter computer specs in a clean form UI
-- Save each entry to `data/computers.csv`
-- Auto-create CSV file with headers if it does not exist
-- Preview all saved records directly in the app
+- Two pages: **Inventory** (browse saved computers) and **Add / Edit** (create or
+  update entries)
+- Structured, optional detail per component (manufacturer, RAM speed, clocks, etc.)
+- Dynamic storage: add or remove as many drives per computer as the build needs
+- Icons for every component
+- Data saved as nested JSON; legacy `computers.csv` is migrated automatically on
+  first run (and backed up to `computers.csv.bak`)
 
 ## Setup
 
@@ -26,8 +29,8 @@ streamlit run app.py
 
 Then open the local Streamlit URL shown in the terminal.
 
-## CSV Storage
+## Storage
 
-Records are saved to:
-
-`data/computers.csv`
+Records are saved to `data/computers.json`. On first launch, any existing
+`data/computers.csv` is converted to JSON and the original is preserved as
+`data/computers.csv.bak`.
