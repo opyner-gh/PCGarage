@@ -20,7 +20,7 @@ def test_summarize_component_joins_present_fields():
 
 def test_summary_row_columns_follow_schema():
     row = widgets.summary_row(storage.empty_computer())
-    expected = (["Computer"]
+    expected = (["Computer", "OS"]
                 + [c["label"] for c in storage.SUMMARY_COMPONENTS]
                 + ["Drives", "Created At"])
     assert list(row.keys()) == expected
@@ -30,11 +30,13 @@ def test_summary_row_has_one_line_per_component_and_drive_count():
     record = storage.empty_computer()
     record["computer_name"] = "RIG"
     record["created_at"] = "2026-01-01T00:00:00"
+    record["os"] = "Windows 11"
     record["cpu"]["model"] = "Ryzen 5 5600X"
     record["storage"] = [{"model": "a"}, {"model": "b"}]
 
     row = widgets.summary_row(record)
     assert row["Computer"] == "RIG"
+    assert row["OS"] == "Windows 11"
     assert row["Drives"] == 2
     assert "Ryzen 5 5600X" in row["CPU"]
     assert row["Created At"] == "2026-01-01T00:00:00"

@@ -121,9 +121,13 @@ def _editor_form(computers: list[dict]) -> None:
 
     name = st.text_input("Computer Name *", value=base.get("computer_name", ""),
                           key=f"name_{scope}")
+    os_name = st.text_input(f"{storage.OS_ICON} OS", value=base.get("os", ""),
+                            key=f"os_{scope}",
+                            placeholder="e.g. Windows 11, Ubuntu 24.04, macOS 15")
 
     record = _collect(scope, base)
     record["computer_name"] = name.strip()
+    record["os"] = os_name.strip()
 
     if st.button("Save", type="primary"):
         if not record["computer_name"]:

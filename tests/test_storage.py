@@ -26,6 +26,7 @@ def test_empty_computer_skeleton():
     record = storage.empty_computer()
     assert record["computer_name"] == ""
     assert record["created_at"] == ""
+    assert record["os"] == ""
     assert record["notes"] == ""
     assert record["storage"] == []
     # scalar components are dicts with one entry per schema field
@@ -37,6 +38,12 @@ def test_empty_computer_skeleton():
 
 def test_summary_components_are_cpu_ram_gpu():
     assert [c["key"] for c in storage.SUMMARY_COMPONENTS] == ["cpu", "ram", "gpu"]
+
+
+def test_empty_computer_has_os_field():
+    # The installed OS is machine-level metadata (a free-text string), kept
+    # alongside notes/computer_name rather than modeled as a hardware component.
+    assert storage.empty_computer()["os"] == ""
 
 
 def test_every_component_declares_a_kind():

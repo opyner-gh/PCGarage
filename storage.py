@@ -11,6 +11,7 @@ CSV_PATH = DATA_DIR / "computers.csv"
 
 PAGE_ICONS = {"inventory": "📦", "editor": "✏️"}
 COMPUTER_ICON = "🖥️"
+OS_ICON = "💿"
 NOTES_ICON = "📝"
 
 # Single source of truth for every structured component and its fields.
@@ -126,7 +127,8 @@ def empty_component(component: dict) -> dict:
 
 
 def empty_computer() -> dict:
-    record = {"computer_name": "", "created_at": ""}
+    # os/notes are machine-level free-text metadata, not hardware components.
+    record = {"computer_name": "", "created_at": "", "os": ""}
     for component in COMPONENTS:
         # list components start empty; scalar ones get a dict of blank fields.
         record[component["key"]] = (

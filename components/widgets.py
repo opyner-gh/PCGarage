@@ -24,7 +24,8 @@ def summarize_component(key: str, data: dict) -> str:
 
 
 def summary_row(record: dict) -> dict:
-    row = {"Computer": record.get("computer_name", "")}
+    row = {"Computer": record.get("computer_name", ""),
+           "OS": record.get("os", "")}
     for component in storage.SUMMARY_COMPONENTS:
         key = component["key"]
         row[component["label"]] = summarize_component(key, record.get(key, {}))

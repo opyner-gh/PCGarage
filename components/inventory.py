@@ -48,6 +48,9 @@ def _selected_detail(computers: list[dict]) -> None:
 
     st.header(f"{storage.COMPUTER_ICON} "
               f"{record.get('computer_name') or 'Unnamed Computer'}")
+    os_name = record.get("os")
+    if widgets.is_filled(os_name):
+        st.caption(f"{storage.OS_ICON} {os_name}")
     created = record.get("created_at")
     if created:
         st.caption(f"Added {created}")

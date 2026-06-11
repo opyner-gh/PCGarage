@@ -22,6 +22,7 @@ EDITOR_SCRIPT = "from components import editor\neditor.render()"
 SAMPLE = [
     {
         "computer_name": "RIG-A", "created_at": "2026-01-01T00:00:00",
+        "os": "Windows 11",
         "cpu": {"manufacturer": "AMD", "model": "5600X", "cores": 6, "threads": 12,
                 "base_clock_ghz": 3.7, "boost_clock_ghz": 4.6, "cooler": "stock"},
         "ram": {"manufacturer": "Corsair", "capacity_gb": 32, "speed_mhz": 3600,
@@ -56,6 +57,10 @@ def _seed(workspace, records):
 
 def _name_input(at):
     return next(t for t in at.text_input if t.label == "Computer Name *")
+
+
+def _os_input(at):
+    return next(t for t in at.text_input if t.label == f"{storage.OS_ICON} OS")
 
 
 def test_app_boots_and_migrates_csv(workspace):
@@ -149,6 +154,29 @@ def test_editor_edit_mode_prefills_selected_record(workspace):
     assert _field_input_value(at, "Computer Name *") == "RIG-A"
     # First "Model" text input belongs to the CPU component.
     assert _field_input_value(at, "Model") == "5600X"
+
+
+def test_editor_edit_mode_prefills_os(workspace):
+    _seed(workspace, SAMPLE)
+
+    at = AppTest.from_string(EDITOR_SCRIPT).run()
+    at.radio[0].set_value("Edit existing").run()
+    at.selectbox[0].select(0).run()  # RIG-A
+
+    assert _os_input(at).value == "Windows 11"
+
+
+def test_editor_add_saves_os(workspace):
+    _seed(workspace, [])
+
+    at = AppTest.from_string(EDITOR_SCRIPT).run()
+    _name_input(at).set_value("OSRIG").run()
+    _os_input(at).set_value("Ubuntu 24.04").run()
+    at.button[0].click().run()
+
+    assert not at.exception
+    saved = storage.load_computers(path=workspace / "data" / "computers.json")
+    assert saved[0]["os"] == "Ubuntu 24.04"
 
 
 def test_editor_switching_records_updates_form(workspace):

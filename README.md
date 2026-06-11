@@ -13,6 +13,7 @@ database or account required.
 - Structured, **optional** detail per component — manufacturer, RAM speed/type,
   CPU clocks, GPU VRAM, PSU wattage, motherboard form factor, and more.
 - **Dynamic storage**: add or remove as many drives per computer as the build needs.
+- Track each machine's **installed operating system** and free-form notes.
 - Dark "ops dashboard" theme (Fira Sans / Fira Code).
 - Data saved as nested JSON; a legacy `computers.csv` is migrated automatically
   on first run (and backed up to `computers.csv.bak`).
