@@ -1,7 +1,11 @@
+from pathlib import Path
+
 import pytest
 
 import storage
 import detection
+
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
 def test_parse_detected_full_record_with_types():
@@ -90,3 +94,17 @@ def test_parse_detected_invalid_json_raises():
 def test_parse_detected_non_object_raises():
     with pytest.raises(ValueError):
         detection.parse_detected("[1, 2, 3]")
+
+
+def _assert_valid_detected_record(record: dict):
+    assert record["computer_name"]
+    assert record["os"]
+    assert record["cpu"]["model"]
+    assert isinstance(record["storage"], list) and record["storage"]
+    # numbers came through as numbers (or None), never leftover strings
+    assert record["cpu"]["cores"] is None or isinstance(record["cpu"]["cores"], int)
+
+
+def test_windows_fixture_matches_contract():
+    text = (FIXTURES / "detected-windows.json").read_text(encoding="utf-8")
+    _assert_valid_detected_record(detection.parse_detected(text))

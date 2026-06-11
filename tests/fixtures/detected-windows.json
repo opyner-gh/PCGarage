@@ -1,0 +1,34 @@
+{
+  "computer_name": "RYZEN-DESK",
+  "os": "Microsoft Windows 11 Pro 10.0.22631",
+  "cpu": {
+    "manufacturer": "AMD",
+    "model": "AMD Ryzen 7 5800X 8-Core Processor",
+    "cores": 8,
+    "threads": 16,
+    "base_clock_ghz": 3.8,
+    "boost_clock_ghz": null,
+    "cooler": ""
+  },
+  "ram": {
+    "manufacturer": "",
+    "capacity_gb": 32,
+    "speed_mhz": 3600,
+    "type": "DDR4",
+    "configuration": "2 modules"
+  },
+  "gpu": {
+    "manufacturer": "NVIDIA",
+    "model": "NVIDIA GeForce RTX 3070",
+    "vram_gb": 8,
+    "brand": ""
+  },
+  "storage": [
+    {"manufacturer": "", "model": "Samsung SSD 980 PRO 1TB",
+     "type": "NVMe SSD", "capacity": "931 GB", "form_factor": ""},
+    {"manufacturer": "", "model": "ST2000DM008-2FR102",
+     "type": "HDD", "capacity": "1863 GB", "form_factor": ""}
+  ],
+  "motherboard": {"model": "B550 AORUS ELITE", "form_factor": ""},
+  "psu": {"model": "", "wattage": null}
+}
