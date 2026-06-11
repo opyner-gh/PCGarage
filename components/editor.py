@@ -73,6 +73,8 @@ def _collect(scope: str, record: dict) -> dict:
 def render() -> None:
     st.title(f"{storage.PAGE_ICONS['editor']} Add / Edit")
 
+    _consume_detected_draft()
+
     try:
         computers = storage.load_computers()
     except Exception as error:
@@ -82,13 +84,26 @@ def render() -> None:
     _editor_form(computers)
 
 
+def _consume_detected_draft() -> None:
+    """If the Detect page handed off a freshly detected record, stage it as the
+    Add-mode prefill and bump the nonce so the form rebuilds with those values.
+    One-shot: the inbound key is popped so later edits aren't overwritten."""
+    draft = st.session_state.pop("detected_draft", None)
+    if draft is None:
+        return
+    st.session_state["editor_draft"] = draft
+    st.session_state["editor_mode"] = "Add new"
+    st.session_state["editor_nonce"] = st.session_state.get("editor_nonce", 0) + 1
+
+
 @st.fragment
 def _editor_form(computers: list[dict]) -> None:
     """The mode picker and form, isolated in a fragment so switching mode or
     computer re-renders only this region instead of reflowing the whole page."""
     if computers:
         editing = st.radio(
-            "Mode", ["Add new", "Edit existing"], horizontal=True) == "Edit existing"
+            "Mode", ["Add new", "Edit existing"], horizontal=True,
+            key="editor_mode") == "Edit existing"
         # Always render the picker (disabled in Add mode) so toggling modes
         # never adds/removes a row and shifts the form below it.
         selected = st.selectbox(
@@ -110,6 +125,9 @@ def _editor_form(computers: list[dict]) -> None:
         base.update(copy.deepcopy(computers[edit_index]))
     else:
         base = storage.empty_computer()
+        draft = st.session_state.get("editor_draft")
+        if draft is not None:
+            base.update(copy.deepcopy(draft))
 
     # Scope every widget key to (a) the record being edited, so switching
     # records reloads its values, and (b) a per-save nonce, so a successful save
@@ -148,6 +166,8 @@ def _editor_form(computers: list[dict]) -> None:
         except Exception as error:  # disk full, permissions, corrupt store, ...
             st.error(f"Could not save changes: {error}")
             return
-        # Bump the nonce so the form re-renders with fresh, empty widgets.
+        # Bump the nonce so the form re-renders with fresh, empty widgets, and
+        # drop any detected draft so the next Add starts blank.
+        st.session_state.pop("editor_draft", None)
         st.session_state["editor_nonce"] = nonce + 1
         st.rerun()

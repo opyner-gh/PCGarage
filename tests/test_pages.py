@@ -380,3 +380,37 @@ def test_detect_missing_script_shows_error(workspace, monkeypatch):
     at = AppTest.from_string(DETECT_SCRIPT).run()
     assert not at.exception
     assert any("missing" in e.value for e in at.error)
+
+
+def test_editor_prefills_from_detected_draft(workspace):
+    _seed(workspace, [])
+    draft = {**storage.empty_computer(),
+             "computer_name": "DETECTED-PC", "os": "Ubuntu 24.04"}
+    draft["cpu"]["model"] = "Core i7-12700"
+
+    at = AppTest.from_string(EDITOR_SCRIPT)
+    at.session_state["detected_draft"] = draft
+    at.run()
+
+    assert not at.exception
+    assert _name_input(at).value == "DETECTED-PC"
+    assert _os_input(at).value == "Ubuntu 24.04"
+    assert _field_input_value(at, "Model") == "Core i7-12700"   # CPU model prefilled
+    assert "detected_draft" not in at.session_state             # one-shot, consumed
+
+
+def test_editor_saves_detected_draft_then_resets(workspace):
+    _seed(workspace, [])
+    draft = {**storage.empty_computer(), "computer_name": "DET", "os": "Win 11"}
+
+    at = AppTest.from_string(EDITOR_SCRIPT)
+    at.session_state["detected_draft"] = draft
+    at.run()
+    at.button[0].click().run()
+
+    assert not at.exception
+    saved = storage.load_computers(path=workspace / "data" / "computers.json")
+    assert saved[0]["computer_name"] == "DET"
+    assert saved[0]["os"] == "Win 11"
+    assert "editor_draft" not in at.session_state   # cleared after save
+    assert _name_input(at).value == ""              # form reset for next entry
