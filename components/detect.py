@@ -23,6 +23,11 @@ PLATFORMS = {
         "lang": "bash",
         "run": "bash detect-linux.sh   # sudo for RAM speed/type + board model",
     },
+    "macOS": {
+        "file": "detect-macos.sh",
+        "lang": "bash",
+        "run": "bash detect-macos.sh",
+    },
 }
 
 
