@@ -30,3 +30,22 @@ def test_empty_computer_skeleton():
     assert record["cpu"]["cores"] is None          # number defaults to None
     assert record["motherboard"]["form_factor"] == ""
     assert record["psu"]["wattage"] is None
+
+
+def test_save_then_load_round_trips(tmp_path):
+    path = tmp_path / "computers.json"
+    record = storage.empty_computer()
+    record["computer_name"] = "TEST-RIG"
+    record["cpu"]["model"] = "Ryzen 5 5600X"
+    record["storage"] = [{"manufacturer": "Kingston", "model": "",
+                          "type": "NVMe SSD", "capacity": "1 TB",
+                          "form_factor": "M.2 2280"}]
+
+    storage.save_computers([record], path=path)
+    loaded = storage.load_computers(path=path)
+
+    assert loaded == [record]
+
+
+def test_load_missing_file_returns_empty_list(tmp_path):
+    assert storage.load_computers(path=tmp_path / "nope.json") == []

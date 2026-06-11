@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 DATA_DIR = Path("data")
@@ -108,3 +109,16 @@ def empty_computer() -> dict:
     record["storage"] = []
     record["notes"] = ""
     return record
+
+
+def load_computers(path: Path = JSON_PATH) -> list[dict]:
+    if not path.exists():
+        return []
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def save_computers(computers: list[dict], path: Path = JSON_PATH) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(computers, handle, indent=2)
