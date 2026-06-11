@@ -1,0 +1,10 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Local data backups created by the CSV->JSON migration
+*.bak
+
+# Coverage artifacts
+.coverage
+htmlcov/

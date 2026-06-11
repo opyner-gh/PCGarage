@@ -1,0 +1,6 @@
+# Development/test dependencies. Installs the runtime deps too, so a single
+#   pip install -r requirements-dev.txt
+# is enough to both run the app and run the test suite.
+-r requirements.txt
+pytest
+coverage

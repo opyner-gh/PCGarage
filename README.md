@@ -1,33 +1,84 @@
 # PCGarage
 
-Simple Streamlit app to manually track computer hardware specifications and save them to a CSV file.
+A small [Streamlit](https://streamlit.io/) app for tracking your computers'
+hardware specifications. Browse your builds on an **Inventory** page and create
+or update them on an **Add / Edit** page. Data is stored locally as JSON — no
+database or account required.
 
 ## Features
 
-- Enter computer specs in a clean form UI
-- Save each entry to `data/computers.csv`
-- Auto-create CSV file with headers if it does not exist
-- Preview all saved records directly in the app
+- **Inventory** page: browse saved computers with per-component detail cards and
+  an "all computers" summary table.
+- **Add / Edit** page: one form to add a new computer or edit an existing one.
+- Structured, **optional** detail per component — manufacturer, RAM speed/type,
+  CPU clocks, GPU VRAM, PSU wattage, motherboard form factor, and more.
+- **Dynamic storage**: add or remove as many drives per computer as the build needs.
+- Track each machine's **installed operating system** and free-form notes.
+- Dark "ops dashboard" theme (Fira Sans / Fira Code).
+- Data saved as nested JSON; a legacy `computers.csv` is migrated automatically
+  on first run (and backed up to `computers.csv.bak`).
 
-## Setup
+## Quick Start
 
-1. Create and activate a virtual environment (optional but recommended)
-2. Install dependencies:
+**Prerequisites:** Python 3.10+ (developed on 3.12).
 
 ```bash
+# 1. Clone and enter the project
+git clone <repo-url>
+cd PCGarage
+
+# 2. (Recommended) create and activate a virtual environment
+python -m venv .venv
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# macOS / Linux:
+source .venv/bin/activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
-```
 
-## Run
-
-```bash
+# 4. Run the app
 streamlit run app.py
 ```
 
-Then open the local Streamlit URL shown in the terminal.
+Streamlit prints a local URL (default <http://localhost:8501>) and opens it in
+your browser. That's it — start adding computers on the **Add / Edit** page.
 
-## CSV Storage
+> If `streamlit` isn't found on your PATH, use `python -m streamlit run app.py`.
 
-Records are saved to:
+## Where your data lives
 
-`data/computers.csv`
+Records are saved to `data/computers.json` (created automatically). On first
+launch, any existing `data/computers.csv` is converted to JSON and the original
+is preserved as `data/computers.csv.bak`. The repo ships two sample computers so
+the app isn't empty on first run.
+
+## Running the tests
+
+The test tooling (pytest, coverage) lives in `requirements-dev.txt`, which also
+pulls in the runtime deps:
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+Optional coverage report:
+
+```bash
+python -m coverage run --source=. --omit="tests/*" -m pytest && python -m coverage report
+```
+
+## Project layout
+
+| Path | Responsibility |
+|------|----------------|
+| `app.py` | Entry point: page config, startup migration, navigation |
+| `storage.py` | Component schema + JSON load/save/migrate (pure logic, no Streamlit) |
+| `components/inventory.py` | The Inventory page |
+| `components/editor.py` | The Add / Edit page |
+| `components/widgets.py` | Shared render/format helpers |
+| `.streamlit/config.toml` | Theme |
+| `tests/` | Unit + page (AppTest) tests |
+| `requirements.txt` | Runtime dependencies (Streamlit, pandas) |
+| `requirements-dev.txt` | Test dependencies (pytest, coverage) + the runtime deps |

@@ -1,0 +1,33 @@
+# Dark "ops dashboard" theme for the PC hardware tracker.
+# Direction from the ui-ux-pro-max skill: Dark (OLED) + Fira Code/Fira Sans,
+# restrained technical accent (teal) instead of the cliché purple.
+
+[theme]
+base = "dark"
+primaryColor = "#2DD4BF"            # teal accent (links, focus, active widgets)
+backgroundColor = "#0F1117"         # near-black canvas
+secondaryBackgroundColor = "#1A1D24"  # cards, inputs, table headers
+textColor = "#E6E8EB"               # high-contrast body text (>=4.5:1)
+borderColor = "#2A2E37"             # subtle card/widget borders
+baseRadius = "0.5rem"
+font = "Fira Sans, sans-serif"
+headingFont = "Fira Sans, sans-serif"
+codeFont = "Fira Code, monospace"
+
+[[theme.fontFaces]]
+family = "Fira Sans"
+url = "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@latest/latin-400-normal.woff2"
+weight = 400
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Fira Sans"
+url = "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@latest/latin-600-normal.woff2"
+weight = 600
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Fira Code"
+url = "https://cdn.jsdelivr.net/fontsource/fonts/fira-code@latest/latin-400-normal.woff2"
+weight = 400
+style = "normal"
