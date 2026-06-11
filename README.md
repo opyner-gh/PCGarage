@@ -14,6 +14,8 @@ database or account required.
   CPU clocks, GPU VRAM, PSU wattage, motherboard form factor, and more.
 - **Dynamic storage**: add or remove as many drives per computer as the build needs.
 - Track each machine's **installed operating system** and free-form notes.
+- **Auto-detect** a machine's specs: run a detection script (Windows / Linux /
+  macOS) on the target PC and paste its output to pre-fill a new computer.
 - Dark "ops dashboard" theme (Fira Sans / Fira Code).
 - Data saved as nested JSON; a legacy `computers.csv` is migrated automatically
   on first run (and backed up to `computers.csv.bak`).
@@ -53,6 +55,21 @@ launch, any existing `data/computers.csv` is converted to JSON and the original
 is preserved as `data/computers.csv.bak`. The repo ships two sample computers so
 the app isn't empty on first run.
 
+## Auto-detecting specs
+
+Open the **🔍 Detect** page, pick the target machine's platform, and download (or
+copy) the detection script:
+
+- **Windows:** `scripts/detect-windows.ps1` — `powershell -ExecutionPolicy Bypass -File .\detect-windows.ps1`
+- **Linux:** `scripts/detect-linux.sh` — `bash detect-linux.sh` (run with `sudo` for RAM speed/type and board model)
+- **macOS:** `scripts/detect-macos.sh` — `bash detect-macos.sh`
+
+Run it on the target PC, copy the JSON it prints (also saved as
+`pcgarage-detected.json`), paste it into the Detect page, and click **Load into
+editor**. The Add / Edit form opens pre-filled for review. Some fields can't be
+detected — **PSU model/wattage** never, and GPU VRAM / form factors are
+best-effort — so review and fill those in before saving.
+
 ## Running the tests
 
 The test tooling (pytest, coverage) lives in `requirements-dev.txt`, which also
@@ -82,3 +99,6 @@ python -m coverage run --source=. --omit="tests/*" -m pytest && python -m covera
 | `tests/` | Unit + page (AppTest) tests |
 | `requirements.txt` | Runtime dependencies (Streamlit, pandas) |
 | `requirements-dev.txt` | Test dependencies (pytest, coverage) + the runtime deps |
+| `components/detect.py` | The Detect page (script delivery + import) |
+| `detection.py` | Parse + normalize pasted detector output (no Streamlit) |
+| `scripts/` | Per-platform hardware detection scripts |
