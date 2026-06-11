@@ -29,7 +29,11 @@ def render() -> None:
 
     platform = st.selectbox("Platform", options=list(PLATFORMS))
     spec = PLATFORMS[platform]
-    script_text = (SCRIPTS_DIR / spec["file"]).read_text(encoding="utf-8")
+    try:
+        script_text = (SCRIPTS_DIR / spec["file"]).read_text(encoding="utf-8")
+    except OSError:
+        st.error(f"Detection script {spec['file']} is missing from the install.")
+        return
 
     st.markdown(
         f"1. Download or copy **{spec['file']}** and run it on the target PC:\n\n"
@@ -56,7 +60,7 @@ def render() -> None:
             return
         st.session_state["detected_draft"] = record
         pages = st.session_state.get("_pages")
-        if pages:
+        if pages and "editor" in pages:
             st.switch_page(pages["editor"])  # pragma: no cover (AppTest can't drive callable-page nav)
         else:
             st.success("Loaded. Open the **Add / Edit** page to review and save.")

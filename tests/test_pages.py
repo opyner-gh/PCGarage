@@ -371,3 +371,12 @@ def test_detect_valid_paste_stashes_draft(workspace):
     # message and leaves the draft for the editor to pick up.
     assert at.session_state["detected_draft"]["computer_name"] == "DET-PC"
     assert any("Add / Edit" in s.value for s in at.success)
+
+
+def test_detect_missing_script_shows_error(workspace, monkeypatch):
+    # Point the page at a scripts dir with no script file -> friendly error,
+    # not an unhandled FileNotFoundError.
+    monkeypatch.setattr("components.detect.SCRIPTS_DIR", workspace / "no-scripts")
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    assert not at.exception
+    assert any("missing" in e.value for e in at.error)
