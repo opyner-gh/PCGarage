@@ -44,7 +44,9 @@ else warn "dmidecode not found; RAM speed/type left blank"; fi
 gpu_model=""; gpu_vendor=""
 if have lspci; then
   gpu_line=$(lspci 2>/dev/null | grep -iE 'vga compatible controller|3d controller' | head -1)
-  gpu_model=$(printf '%s' "$gpu_line" | sed 's/^[^:]*: //')
+  # Strip the PCI address + class prefix up to the last ": " (greedy .* — a
+  # leading "[^:]*" stops at the address colon and never matches).
+  gpu_model=$(printf '%s' "$gpu_line" | sed 's/^.*: //')
   case "$gpu_line" in
     *NVIDIA*) gpu_vendor=NVIDIA;;
     *AMD*|*Radeon*|*"Advanced Micro"*) gpu_vendor=AMD;;
