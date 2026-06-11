@@ -15,13 +15,9 @@ def is_filled(value) -> bool:
     return True
 
 
-def _component_by_key(key: str) -> dict:
-    return next(c for c in storage.COMPONENTS if c["key"] == key)
-
-
 def summarize_component(key: str, data: dict) -> str:
     """One-line summary of a scalar component's filled fields, in schema order."""
-    component = _component_by_key(key)
+    component = storage.COMPONENTS_BY_KEY[key]
     parts = [str(data.get(f["key"])) for f in component["fields"]
              if is_filled(data.get(f["key"]))]
     return " · ".join(parts)

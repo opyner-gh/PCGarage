@@ -15,11 +15,14 @@ NOTES_ICON = "📝"
 
 # Single source of truth for every structured component and its fields.
 # widget: "text" -> text_input, "number" -> number_input, "select" -> selectbox.
+# kind:   "scalar" -> one dict of fields per computer;
+#         "list"   -> a dynamic list of rows, each a dict of the same fields.
 COMPONENTS = [
     {
         "key": "cpu",
         "label": "CPU",
         "icon": "🧠",
+        "kind": "scalar",
         "summary": True,
         "fields": [
             {"key": "manufacturer", "label": "Manufacturer", "widget": "select",
@@ -36,6 +39,7 @@ COMPONENTS = [
         "key": "ram",
         "label": "RAM",
         "icon": "🧩",
+        "kind": "scalar",
         "summary": True,
         "fields": [
             {"key": "manufacturer", "label": "Manufacturer", "widget": "text"},
@@ -52,6 +56,7 @@ COMPONENTS = [
         "key": "gpu",
         "label": "GPU",
         "icon": "🎮",
+        "kind": "scalar",
         "summary": True,
         "fields": [
             {"key": "manufacturer", "label": "Manufacturer", "widget": "select",
@@ -66,6 +71,7 @@ COMPONENTS = [
         "key": "storage",
         "label": "Storage",
         "icon": "💾",
+        "kind": "list",
         # storage is a dynamic list of drives; these are the per-drive fields.
         "fields": [
             {"key": "manufacturer", "label": "Manufacturer", "widget": "text"},
@@ -81,6 +87,7 @@ COMPONENTS = [
         "key": "motherboard",
         "label": "Motherboard",
         "icon": "🔩",
+        "kind": "scalar",
         "fields": [
             {"key": "model", "label": "Model", "widget": "text"},
             {"key": "form_factor", "label": "Form Factor", "widget": "select",
@@ -91,6 +98,7 @@ COMPONENTS = [
         "key": "psu",
         "label": "PSU",
         "icon": "🔌",
+        "kind": "scalar",
         "fields": [
             {"key": "model", "label": "Model", "widget": "text"},
             {"key": "wattage", "label": "Wattage", "widget": "number",
@@ -99,10 +107,14 @@ COMPONENTS = [
     },
 ]
 
-SCALAR_COMPONENTS = [c for c in COMPONENTS if c["key"] != "storage"]
-STORAGE_COMPONENT = next(c for c in COMPONENTS if c["key"] == "storage")
+# Classification is derived from each component's declared "kind" rather than
+# matching on a specific key, so adding another list/scalar component is data.
+SCALAR_COMPONENTS = [c for c in COMPONENTS if c["kind"] == "scalar"]
+STORAGE_COMPONENT = next(c for c in COMPONENTS if c["kind"] == "list")
 # Components shown as one-line columns in the inventory summary table.
 SUMMARY_COMPONENTS = [c for c in COMPONENTS if c.get("summary")]
+# O(1) lookup by key, built once, for callers that resolve a component by name.
+COMPONENTS_BY_KEY = {c["key"]: c for c in COMPONENTS}
 
 
 def _field_default(field: dict):
@@ -115,9 +127,10 @@ def empty_component(component: dict) -> dict:
 
 def empty_computer() -> dict:
     record = {"computer_name": "", "created_at": ""}
-    for component in SCALAR_COMPONENTS:
-        record[component["key"]] = empty_component(component)
-    record["storage"] = []
+    for component in COMPONENTS:
+        # list components start empty; scalar ones get a dict of blank fields.
+        record[component["key"]] = (
+            [] if component["kind"] == "list" else empty_component(component))
     record["notes"] = ""
     return record
 

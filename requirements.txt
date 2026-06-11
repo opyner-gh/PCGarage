@@ -1,4 +1,2 @@
 streamlit
 pandas
-pytest
-coverage

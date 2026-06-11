@@ -12,6 +12,7 @@ def test_every_component_has_label_icon_and_fields():
     for component in storage.COMPONENTS:
         assert component["label"]
         assert component["icon"]
+        assert component["kind"] in {"scalar", "list"}
         assert isinstance(component["fields"], list)
         for field in component["fields"]:
             assert field["key"]
@@ -36,6 +37,27 @@ def test_empty_computer_skeleton():
 
 def test_summary_components_are_cpu_ram_gpu():
     assert [c["key"] for c in storage.SUMMARY_COMPONENTS] == ["cpu", "ram", "gpu"]
+
+
+def test_every_component_declares_a_kind():
+    for component in storage.COMPONENTS:
+        assert component["kind"] in {"scalar", "list"}
+
+
+def test_scalar_and_list_constants_partition_components_by_kind():
+    # The scalar/list split is derived from each component's declared "kind",
+    # not from hardcoding the "storage" key — so a future list component is
+    # classified correctly with no edit here.
+    assert all(c["kind"] == "scalar" for c in storage.SCALAR_COMPONENTS)
+    assert storage.STORAGE_COMPONENT["kind"] == "list"
+    assert (len(storage.SCALAR_COMPONENTS) + 1) == len(storage.COMPONENTS)
+    assert storage.STORAGE_COMPONENT not in storage.SCALAR_COMPONENTS
+
+
+def test_components_by_key_indexes_every_component():
+    assert set(storage.COMPONENTS_BY_KEY) == {c["key"] for c in storage.COMPONENTS}
+    for key, component in storage.COMPONENTS_BY_KEY.items():
+        assert component["key"] == key
 
 
 def test_integer_number_fields_flagged_in_schema():

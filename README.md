@@ -54,7 +54,11 @@ the app isn't empty on first run.
 
 ## Running the tests
 
+The test tooling (pytest, coverage) lives in `requirements-dev.txt`, which also
+pulls in the runtime deps:
+
 ```bash
+pip install -r requirements-dev.txt
 python -m pytest
 ```
 
@@ -75,3 +79,5 @@ python -m coverage run --source=. --omit="tests/*" -m pytest && python -m covera
 | `components/widgets.py` | Shared render/format helpers |
 | `.streamlit/config.toml` | Theme |
 | `tests/` | Unit + page (AppTest) tests |
+| `requirements.txt` | Runtime dependencies (Streamlit, pandas) |
+| `requirements-dev.txt` | Test dependencies (pytest, coverage) + the runtime deps |
