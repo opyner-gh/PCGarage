@@ -12,6 +12,11 @@ host=$(scutil --get ComputerName 2>/dev/null || hostname)
 os_name="macOS $(sw_vers -productVersion 2>/dev/null)"
 
 cpu_model=$(sysctl -n machdep.cpu.brand_string 2>/dev/null)
+if [ -z "${cpu_model:-}" ]; then
+  # Apple Silicon has no machdep.cpu.brand_string; read the chip name instead.
+  cpu_model=$(system_profiler SPHardwareDataType 2>/dev/null \
+              | sed -n 's/^[[:space:]]*Chip:[[:space:]]*//p' | head -1)
+fi
 cpu_cores=$(sysctl -n hw.physicalcpu 2>/dev/null)
 cpu_threads=$(sysctl -n hw.logicalcpu 2>/dev/null)
 
