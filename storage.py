@@ -122,3 +122,19 @@ def save_computers(computers: list[dict], path: Path = JSON_PATH) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         json.dump(computers, handle, indent=2)
+
+
+def add_computer(computer: dict, path: Path = JSON_PATH) -> None:
+    computers = load_computers(path=path)
+    computers.append(computer)
+    save_computers(computers, path=path)
+
+
+def update_computer(index: int, computer: dict, path: Path = JSON_PATH) -> None:
+    computers = load_computers(path=path)
+    if not 0 <= index < len(computers):
+        raise IndexError(f"Invalid computer index: {index}")
+    computer = dict(computer)
+    computer["created_at"] = computers[index].get("created_at", "")
+    computers[index] = computer
+    save_computers(computers, path=path)

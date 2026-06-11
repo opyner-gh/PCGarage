@@ -49,3 +49,34 @@ def test_save_then_load_round_trips(tmp_path):
 
 def test_load_missing_file_returns_empty_list(tmp_path):
     assert storage.load_computers(path=tmp_path / "nope.json") == []
+
+
+def test_add_computer_appends(tmp_path):
+    path = tmp_path / "computers.json"
+    first = storage.empty_computer()
+    first["computer_name"] = "A"
+    second = storage.empty_computer()
+    second["computer_name"] = "B"
+
+    storage.add_computer(first, path=path)
+    storage.add_computer(second, path=path)
+
+    names = [c["computer_name"] for c in storage.load_computers(path=path)]
+    assert names == ["A", "B"]
+
+
+def test_update_computer_preserves_created_at(tmp_path):
+    path = tmp_path / "computers.json"
+    original = storage.empty_computer()
+    original["computer_name"] = "A"
+    original["created_at"] = "2026-01-01T00:00:00"
+    storage.add_computer(original, path=path)
+
+    edited = storage.empty_computer()
+    edited["computer_name"] = "A-renamed"
+    edited["created_at"] = "ignored"            # must be overwritten with original
+    storage.update_computer(0, edited, path=path)
+
+    result = storage.load_computers(path=path)[0]
+    assert result["computer_name"] == "A-renamed"
+    assert result["created_at"] == "2026-01-01T00:00:00"
