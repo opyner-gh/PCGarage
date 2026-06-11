@@ -20,9 +20,8 @@ def _field_input(scope: str, component_key: str, field: dict, current):
     label = field["label"]
     if field["widget"] == "number":
         value = None if current in (None, "") else current
-        return st.number_input(label, value=value, step=1 if field["key"] in
-                               {"cores", "threads", "capacity_gb", "speed_mhz",
-                                "vram_gb", "wattage"} else None, key=key)
+        step = 1 if field.get("integer") else None
+        return st.number_input(label, value=value, step=step, key=key)
     if field["widget"] == "select":
         options = field["options"]
         index = options.index(current) if current in options else 0

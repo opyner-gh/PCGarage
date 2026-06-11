@@ -34,6 +34,20 @@ def test_empty_computer_skeleton():
     assert record["psu"]["wattage"] is None
 
 
+def test_integer_number_fields_flagged_in_schema():
+    int_fields = {"cores", "threads", "capacity_gb", "speed_mhz", "vram_gb",
+                  "wattage"}
+    float_fields = {"base_clock_ghz", "boost_clock_ghz"}
+    for component in storage.COMPONENTS:
+        for field in component["fields"]:
+            if field["widget"] != "number":
+                assert "integer" not in field  # flag only applies to numbers
+            elif field["key"] in int_fields:
+                assert field.get("integer") is True
+            elif field["key"] in float_fields:
+                assert not field.get("integer")
+
+
 def test_save_then_load_round_trips(tmp_path):
     path = tmp_path / "computers.json"
     record = storage.empty_computer()
