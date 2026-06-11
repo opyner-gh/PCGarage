@@ -126,7 +126,10 @@ def load_computers(path: Path = JSON_PATH) -> list[dict]:
     if not path.exists():
         return []
     with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+        data = json.load(handle)
+    if not isinstance(data, list):
+        raise ValueError("computers.json must contain a list of computers.")
+    return data
 
 
 def save_computers(computers: list[dict], path: Path = JSON_PATH) -> None:

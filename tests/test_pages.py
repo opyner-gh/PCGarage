@@ -73,6 +73,30 @@ def test_app_boots_and_migrates_csv(workspace):
     assert not (workspace / "data" / "computers.csv").exists()
 
 
+def test_app_survives_migration_failure(workspace, monkeypatch):
+    # A failure migrating the legacy CSV must not brick the whole app.
+    def boom(*args, **kwargs):
+        raise OSError("cannot read legacy csv")
+
+    monkeypatch.setattr(storage, "migrate_csv_if_present", boom)
+
+    at = AppTest.from_file(APP_PATH).run()
+
+    assert not at.exception  # app still renders instead of crashing on startup
+    assert any("Could not migrate" in err.value for err in at.error)
+
+
+@pytest.mark.parametrize("script", [INVENTORY_SCRIPT, EDITOR_SCRIPT])
+def test_pages_handle_malformed_shape_json(workspace, script):
+    # Valid JSON but the wrong top-level shape (an object, not a list).
+    (workspace / "data" / "computers.json").write_text('{"oops": 1}', encoding="utf-8")
+
+    at = AppTest.from_string(script).run()
+
+    assert not at.exception
+    assert any("Could not read" in err.value for err in at.error)
+
+
 def test_inventory_renders_with_data(workspace):
     _seed(workspace, SAMPLE)
 
@@ -204,6 +228,22 @@ def test_editor_edit_save_handles_deleted_record(workspace, monkeypatch):
 
     assert not at.exception
     assert any("no longer exists" in err.value for err in at.error)
+
+
+def test_editor_add_save_handles_write_failure(workspace, monkeypatch):
+    _seed(workspace, [])
+
+    def boom(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(storage, "add_computer", boom)
+
+    at = AppTest.from_string(EDITOR_SCRIPT).run()
+    _name_input(at).set_value("X").run()
+    at.button[0].click().run()
+
+    assert not at.exception
+    assert any("Could not save" in err.value for err in at.error)
 
 
 def test_editor_add_saves_new_computer(workspace):

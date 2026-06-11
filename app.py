@@ -8,7 +8,11 @@ from components import inventory, editor
 
 def main() -> None:
     st.set_page_config(page_title="PCGarage", layout="wide")
-    storage.migrate_csv_if_present()
+    try:
+        storage.migrate_csv_if_present()
+    except Exception as error:  # never let a migration failure brick the app
+        st.error(f"Could not migrate existing data: {error}. "
+                 "Your original data/computers.csv is unchanged.")
 
     pages = [
         st.Page(inventory.render, title="Inventory", url_path="inventory",

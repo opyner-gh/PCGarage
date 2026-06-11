@@ -71,6 +71,13 @@ def test_load_missing_file_returns_empty_list(tmp_path):
     assert storage.load_computers(path=tmp_path / "nope.json") == []
 
 
+def test_load_rejects_non_list_json(tmp_path):
+    path = tmp_path / "computers.json"
+    path.write_text("{}", encoding="utf-8")  # valid JSON, wrong shape
+    with pytest.raises(ValueError):
+        storage.load_computers(path=path)
+
+
 def test_add_computer_appends(tmp_path):
     path = tmp_path / "computers.json"
     first = storage.empty_computer()

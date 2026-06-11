@@ -114,16 +114,19 @@ def render() -> None:
         if not record["computer_name"]:
             st.error("Computer Name is required.")
             return
-        if mode == "Edit existing" and edit_index is not None:
-            try:
+        try:
+            if mode == "Edit existing" and edit_index is not None:
                 storage.update_computer(edit_index, record)
-            except IndexError:
-                st.error("That computer no longer exists. "
-                         "Reload the page and try again.")
-                return
-            st.success("Computer updated.")
-        else:
-            record["created_at"] = datetime.now().isoformat(timespec="seconds")
-            storage.add_computer(record)
-            st.success("Computer saved.")
+                st.success("Computer updated.")
+            else:
+                record["created_at"] = datetime.now().isoformat(timespec="seconds")
+                storage.add_computer(record)
+                st.success("Computer saved.")
+        except IndexError:
+            st.error("That computer no longer exists. "
+                     "Reload the page and try again.")
+            return
+        except Exception as error:  # disk full, permissions, corrupt store, ...
+            st.error(f"Could not save changes: {error}")
+            return
         st.rerun()
