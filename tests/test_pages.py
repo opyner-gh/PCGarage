@@ -187,6 +187,25 @@ def test_editor_save_requires_name(workspace):
     assert any("required" in err.value.lower() for err in at.error)
 
 
+def test_editor_edit_save_handles_deleted_record(workspace, monkeypatch):
+    # Another tab/process deletes the record between load and Save -> the page
+    # must show a friendly error, not crash with an unhandled IndexError.
+    _seed(workspace, SAMPLE)
+
+    def boom(*args, **kwargs):
+        raise IndexError("gone")
+
+    monkeypatch.setattr(storage, "update_computer", boom)
+
+    at = AppTest.from_string(EDITOR_SCRIPT).run()
+    at.radio[0].set_value("Edit existing").run()
+    at.selectbox[0].select(0).run()
+    at.button[0].click().run()
+
+    assert not at.exception
+    assert any("no longer exists" in err.value for err in at.error)
+
+
 def test_editor_add_saves_new_computer(workspace):
     _seed(workspace, [])
 
