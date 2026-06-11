@@ -397,6 +397,7 @@ def test_editor_prefills_from_detected_draft(workspace):
     assert _os_input(at).value == "Ubuntu 24.04"
     assert _field_input_value(at, "Model") == "Core i7-12700"   # CPU model prefilled
     assert "detected_draft" not in at.session_state             # one-shot, consumed
+    assert at.session_state["editor_mode"] == "Add new"
 
 
 def test_editor_saves_detected_draft_then_resets(workspace):
@@ -414,3 +415,19 @@ def test_editor_saves_detected_draft_then_resets(workspace):
     assert saved[0]["os"] == "Win 11"
     assert "editor_draft" not in at.session_state   # cleared after save
     assert _name_input(at).value == ""              # form reset for next entry
+
+
+def test_editor_prefills_draft_with_existing_computers(workspace):
+    # The realistic case: the user already has saved machines and a detected
+    # draft arrives — it must force Add mode and prefill, not edit a record.
+    _seed(workspace, SAMPLE)
+    draft = {**storage.empty_computer(), "computer_name": "NEW-PC"}
+
+    at = AppTest.from_string(EDITOR_SCRIPT)
+    at.session_state["detected_draft"] = draft
+    at.run()
+
+    assert not at.exception
+    assert at.session_state["editor_mode"] == "Add new"
+    assert _name_input(at).value == "NEW-PC"
+    assert "detected_draft" not in at.session_state

@@ -125,7 +125,9 @@ def _editor_form(computers: list[dict]) -> None:
         base.update(copy.deepcopy(computers[edit_index]))
     else:
         base = storage.empty_computer()
-        draft = st.session_state.get("editor_draft")
+        # pop (not get): apply the detected draft once, so it can't haunt a later
+        # blank Add form if the user navigated away without saving.
+        draft = st.session_state.pop("editor_draft", None)
         if draft is not None:
             base.update(copy.deepcopy(draft))
 
