@@ -335,3 +335,39 @@ def test_inventory_renders_sparse_record(workspace):
     assert not at.exception
     # Empty components, drives, and notes all show the same "Not recorded" note.
     assert sum("Not recorded" in c.value for c in at.caption) >= 2
+
+
+DETECT_SCRIPT = "from components import detect\ndetect.render()"
+
+
+def test_detect_page_renders(workspace):
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    assert not at.exception
+    assert any("Detect" in t.value for t in at.title)
+
+
+def test_detect_empty_paste_shows_error(workspace):
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    at.button[0].click().run()
+    assert not at.exception
+    assert any("Paste" in e.value for e in at.error)
+
+
+def test_detect_invalid_json_shows_error(workspace):
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    at.text_area[0].set_value("not json").run()
+    at.button[0].click().run()
+    assert not at.exception
+    assert any("Couldn't read" in e.value for e in at.error)
+
+
+def test_detect_valid_paste_stashes_draft(workspace):
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    at.text_area[0].set_value(
+        '{"computer_name": "DET-PC", "cpu": {"model": "i7"}}').run()
+    at.button[0].click().run()
+    assert not at.exception
+    # No _pages registry in the isolated page test, so it falls back to a success
+    # message and leaves the draft for the editor to pick up.
+    assert at.session_state["detected_draft"]["computer_name"] == "DET-PC"
+    assert any("Add / Edit" in s.value for s in at.success)
