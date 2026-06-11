@@ -11,7 +11,7 @@ import detection
 # package so the page works regardless of the process's working directory.
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 
-# Platforms grow as their scripts land (Linux in Task 6, macOS in Task 7).
+# One entry per platform that ships a detection script.
 PLATFORMS = {
     "Windows": {
         "file": "detect-windows.ps1",

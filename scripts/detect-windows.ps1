@@ -27,8 +27,9 @@ if ($mem.Count -gt 0) {
     $sum = ($mem | Measure-Object -Property Capacity -Sum).Sum
     if ($sum) { $capacityGb = ConvertTo-GB $sum }
     if ($mem[0].Speed) { $speedMhz = [int]$mem[0].Speed }
-    $ddr = @{ '20' = 'DDR3'; '21' = 'DDR3'; '24' = 'DDR3'; '26' = 'DDR4'; '34' = 'DDR5';
-              '29' = 'LPDDR3'; '30' = 'LPDDR4'; '35' = 'LPDDR5' }
+    # Only the DDR generations the RAM "type" select offers; anything else maps
+    # to "" so the editor doesn't blank an out-of-vocabulary value on import.
+    $ddr = @{ '20' = 'DDR3'; '21' = 'DDR3'; '24' = 'DDR3'; '26' = 'DDR4'; '34' = 'DDR5' }
     $ramType = [string]$ddr["$($mem[0].SMBIOSMemoryType)"]
     if ($mem.Count -gt 1) { $ramConfig = "$($mem.Count) modules" }
 }
