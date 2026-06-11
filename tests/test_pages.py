@@ -139,6 +139,24 @@ def test_editor_switching_records_updates_form(workspace):
     assert _field_input_value(at, "Computer Name *") == "PARTIAL"
 
 
+def test_editor_renders_drive_with_empty_select_values(workspace):
+    # A drive whose type/form_factor are "" (migrated or newly added) must
+    # render in the data_editor without error now that "" is a valid option.
+    record = {
+        **storage.empty_computer(), "computer_name": "DRV",
+        "created_at": "2026-01-01T00:00:00",
+        "storage": [{"manufacturer": "WD", "model": "Blue", "type": "",
+                     "capacity": "2 TB", "form_factor": ""}],
+    }
+    _seed(workspace, [record])
+
+    at = AppTest.from_string(EDITOR_SCRIPT).run()
+    at.radio[0].set_value("Edit existing").run()
+    at.selectbox[0].select(0).run()
+
+    assert not at.exception
+
+
 def test_editor_save_requires_name(workspace):
     _seed(workspace, [])
 

@@ -39,8 +39,10 @@ def _storage_editor(scope: str, drives: list[dict]) -> list[dict]:
     column_config = {}
     for field in component["fields"]:
         if field["widget"] == "select":
+            # Keep "" in the options so an unset drive cell (new rows, migrated
+            # drives) is a valid choice rather than being flagged invalid.
             column_config[field["key"]] = st.column_config.SelectboxColumn(
-                labels[field["key"]], options=[o for o in field["options"] if o])
+                labels[field["key"]], options=field["options"])
         else:
             column_config[field["key"]] = st.column_config.TextColumn(
                 labels[field["key"]])
