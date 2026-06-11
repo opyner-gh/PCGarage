@@ -18,6 +18,11 @@ PLATFORMS = {
         "lang": "powershell",
         "run": "powershell -ExecutionPolicy Bypass -File .\\detect-windows.ps1",
     },
+    "Linux": {
+        "file": "detect-linux.sh",
+        "lang": "bash",
+        "run": "bash detect-linux.sh   # sudo for RAM speed/type + board model",
+    },
 }
 
 

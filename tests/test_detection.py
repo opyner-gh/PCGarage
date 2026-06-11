@@ -110,3 +110,8 @@ def _assert_valid_detected_record(record: dict):
 def test_windows_fixture_matches_contract():
     text = (FIXTURES / "detected-windows.json").read_text(encoding="utf-8")
     _assert_valid_detected_record(detection.parse_detected(text))
+
+
+def test_linux_fixture_matches_contract():
+    text = (FIXTURES / "detected-linux.json").read_text(encoding="utf-8")
+    _assert_valid_detected_record(detection.parse_detected(text))
