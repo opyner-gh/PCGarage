@@ -200,10 +200,3 @@ def test_migration_ram_with_extra_tokens_preserved_as_configuration(tmp_path):
     # A clean "<n> GB" capacity still parses.
     assert c["ram"]["capacity_gb"] == 64
     assert c["ram"]["configuration"] == ""
-
-
-def test_is_notes_present():
-    assert storage.is_notes_present({"notes": "main rig"}) is True
-    assert storage.is_notes_present({"notes": "   "}) is False
-    assert storage.is_notes_present({"notes": ""}) is False
-    assert storage.is_notes_present({}) is False

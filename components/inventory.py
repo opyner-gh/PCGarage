@@ -46,7 +46,7 @@ def render() -> None:
 
     widgets.render_storage_detail(record.get("storage", []))
 
-    if storage.is_notes_present(record):
+    if widgets.is_filled(record.get("notes")):
         st.markdown(f"#### {storage.NOTES_ICON} Notes")
         st.write(record["notes"])
 
