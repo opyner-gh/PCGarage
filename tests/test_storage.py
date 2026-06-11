@@ -80,3 +80,66 @@ def test_update_computer_preserves_created_at(tmp_path):
     result = storage.load_computers(path=path)[0]
     assert result["computer_name"] == "A-renamed"
     assert result["created_at"] == "2026-01-01T00:00:00"
+
+
+def _write_legacy_csv(path):
+    path.write_text(
+        "Computer Name,CPU,RAM,GPU,Storage,Motherboard,PSU,Notes,Created At\n"
+        "XEON,intel xeon,64gb,quadro p4000,kingston nvme 500gb,"
+        "dell precision 3630,stock,main workstation,2026-04-07T15:24:26\n"
+        "TEXTRAM,cpu,dual channel,gpu,,mobo,psu,note,2026-04-07T16:00:00\n",
+        encoding="utf-8",
+    )
+
+
+def test_migration_converts_rows(tmp_path):
+    csv_path = tmp_path / "computers.csv"
+    json_path = tmp_path / "computers.json"
+    _write_legacy_csv(csv_path)
+
+    storage.migrate_csv_if_present(json_path=json_path, csv_path=csv_path)
+
+    computers = storage.load_computers(path=json_path)
+    assert len(computers) == 2
+
+    xeon = computers[0]
+    assert xeon["computer_name"] == "XEON"
+    assert xeon["created_at"] == "2026-04-07T15:24:26"
+    assert xeon["cpu"]["model"] == "intel xeon"
+    assert xeon["ram"]["capacity_gb"] == 64           # "64gb" parses to a number
+    assert xeon["ram"]["configuration"] == ""
+    assert xeon["gpu"]["model"] == "quadro p4000"
+    assert xeon["storage"] == [{
+        "manufacturer": "", "model": "kingston nvme 500gb",
+        "type": "", "capacity": "", "form_factor": "",
+    }]
+    assert xeon["motherboard"]["model"] == "dell precision 3630"
+    assert xeon["psu"]["model"] == "stock"
+    assert xeon["notes"] == "main workstation"
+
+    textram = computers[1]
+    assert textram["ram"]["capacity_gb"] is None      # "dual channel" has no number
+    assert textram["ram"]["configuration"] == "dual channel"
+    assert textram["storage"] == []                   # blank storage -> no drives
+
+
+def test_migration_is_noop_when_json_exists(tmp_path):
+    csv_path = tmp_path / "computers.csv"
+    json_path = tmp_path / "computers.json"
+    _write_legacy_csv(csv_path)
+    storage.save_computers([], path=json_path)        # JSON already present
+
+    storage.migrate_csv_if_present(json_path=json_path, csv_path=csv_path)
+
+    assert storage.load_computers(path=json_path) == []  # untouched
+
+
+def test_migration_backs_up_csv(tmp_path):
+    csv_path = tmp_path / "computers.csv"
+    json_path = tmp_path / "computers.json"
+    _write_legacy_csv(csv_path)
+
+    storage.migrate_csv_if_present(json_path=json_path, csv_path=csv_path)
+
+    assert not csv_path.exists()
+    assert (tmp_path / "computers.csv.bak").exists()

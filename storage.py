@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import csv
 import json
+import re
 from pathlib import Path
 
 DATA_DIR = Path("data")
@@ -138,3 +140,48 @@ def update_computer(index: int, computer: dict, path: Path = JSON_PATH) -> None:
     computer["created_at"] = computers[index].get("created_at", "")
     computers[index] = computer
     save_computers(computers, path=path)
+
+
+def _first_int(value: str):
+    match = re.search(r"\d+", value)
+    return int(match.group()) if match else None
+
+
+def _row_to_computer(row: dict) -> dict:
+    record = empty_computer()
+    record["computer_name"] = (row.get("Computer Name") or "").strip()
+    record["created_at"] = (row.get("Created At") or "").strip()
+    record["cpu"]["model"] = (row.get("CPU") or "").strip()
+    record["gpu"]["model"] = (row.get("GPU") or "").strip()
+    record["motherboard"]["model"] = (row.get("Motherboard") or "").strip()
+    record["psu"]["model"] = (row.get("PSU") or "").strip()
+    record["notes"] = (row.get("Notes") or "").strip()
+
+    ram = (row.get("RAM") or "").strip()
+    capacity = _first_int(ram)
+    if capacity is not None:
+        record["ram"]["capacity_gb"] = capacity
+    elif ram:
+        record["ram"]["configuration"] = ram
+
+    storage_value = (row.get("Storage") or "").strip()
+    if storage_value:
+        drive = empty_component(STORAGE_COMPONENT)
+        drive["model"] = storage_value
+        record["storage"] = [drive]
+
+    return record
+
+
+def migrate_csv_if_present(
+    json_path: Path = JSON_PATH, csv_path: Path = CSV_PATH
+) -> None:
+    if json_path.exists():
+        return
+    if not csv_path.exists():
+        return
+    with csv_path.open("r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    computers = [_row_to_computer(row) for row in rows]
+    save_computers(computers, path=json_path)
+    csv_path.replace(csv_path.with_suffix(csv_path.suffix + ".bak"))
