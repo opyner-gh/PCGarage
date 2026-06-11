@@ -77,6 +77,11 @@ def test_parse_detected_storage_skips_blank_and_non_dict_rows():
     assert [d["model"] for d in record["storage"]] == ["keep"]
 
 
+def test_parse_detected_storage_non_list_non_dict_ignored():
+    record = detection.parse_detected('{"storage": 42}')
+    assert record["storage"] == []
+
+
 def test_parse_detected_invalid_json_raises():
     with pytest.raises(ValueError):
         detection.parse_detected("not json at all")

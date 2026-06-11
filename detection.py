@@ -24,11 +24,11 @@ def _clean_str(value) -> str:
 
 
 def _normalize_drive(drive: dict) -> dict:
-    keys = [f["key"] for f in storage.STORAGE_COMPONENT["fields"]]
+    # storage has only text/select fields, so every value is a cleaned string.
     row = storage.empty_component(storage.STORAGE_COMPONENT)
-    for key in keys:
-        if key in drive:
-            row[key] = _clean_str(drive[key])
+    for field in storage.STORAGE_COMPONENT["fields"]:
+        if field["key"] in drive:
+            row[field["key"]] = _clean_str(drive[field["key"]])
     return row
 
 
@@ -78,6 +78,6 @@ def parse_detected(text: str) -> dict:
             row = _normalize_drive(drive)
             if any(str(v).strip() for v in row.values()):
                 normalized.append(row)
-        record["storage"] = normalized
+        record[storage.STORAGE_COMPONENT["key"]] = normalized
 
     return record
