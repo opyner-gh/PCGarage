@@ -211,6 +211,19 @@ def test_editor_save_requires_name(workspace):
     assert any("required" in err.value.lower() for err in at.error)
 
 
+def test_editor_add_form_resets_after_save(workspace):
+    # After saving, the Add form must clear so the next entry starts blank
+    # (otherwise the just-saved values linger and invite accidental re-saves).
+    _seed(workspace, [])
+
+    at = AppTest.from_string(EDITOR_SCRIPT).run()
+    _name_input(at).set_value("AAA").run()
+    at.button[0].click().run()
+
+    assert not at.exception
+    assert _name_input(at).value == ""
+
+
 def test_editor_edit_save_handles_deleted_record(workspace, monkeypatch):
     # Another tab/process deletes the record between load and Save -> the page
     # must show a friendly error, not crash with an unhandled IndexError.

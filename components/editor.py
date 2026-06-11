@@ -65,7 +65,7 @@ def _collect(scope: str, record: dict) -> dict:
     with st.expander(f"{storage.STORAGE_COMPONENT['icon']} Storage", expanded=True):
         record["storage"] = _storage_editor(scope, record.get("storage", []))
     record["notes"] = st.text_area(
-        f"{storage.NOTES_ICON} Notes", value=record.get("notes", ""),
+        f"{storage.NOTES_ICON} Notes", value=record.get("notes") or "",
         key=f"notes_{scope}")
     return record
 
@@ -87,8 +87,8 @@ def _editor_form(computers: list[dict]) -> None:
     """The mode picker and form, isolated in a fragment so switching mode or
     computer re-renders only this region instead of reflowing the whole page."""
     if computers:
-        mode = st.radio("Mode", ["Add new", "Edit existing"], horizontal=True)
-        editing = mode == "Edit existing"
+        editing = st.radio(
+            "Mode", ["Add new", "Edit existing"], horizontal=True) == "Edit existing"
         # Always render the picker (disabled in Add mode) so toggling modes
         # never adds/removes a row and shifts the form below it.
         selected = st.selectbox(
@@ -111,9 +111,13 @@ def _editor_form(computers: list[dict]) -> None:
     else:
         base = storage.empty_computer()
 
-    # Scope every widget key to the record being edited; otherwise Streamlit
-    # retains the previously selected record's values in session_state.
-    scope = f"edit{edit_index}" if edit_index is not None else "add"
+    # Scope every widget key to (a) the record being edited, so switching
+    # records reloads its values, and (b) a per-save nonce, so a successful save
+    # yields fresh widget keys — clearing the Add form and dropping the stale
+    # data_editor edit-state that would otherwise duplicate just-saved drives.
+    nonce = st.session_state.get("editor_nonce", 0)
+    target = f"edit{edit_index}" if edit_index is not None else "add"
+    scope = f"{target}_{nonce}"
 
     name = st.text_input("Computer Name *", value=base.get("computer_name", ""),
                           key=f"name_{scope}")
@@ -140,4 +144,6 @@ def _editor_form(computers: list[dict]) -> None:
         except Exception as error:  # disk full, permissions, corrupt store, ...
             st.error(f"Could not save changes: {error}")
             return
+        # Bump the nonce so the form re-renders with fresh, empty widgets.
+        st.session_state["editor_nonce"] = nonce + 1
         st.rerun()

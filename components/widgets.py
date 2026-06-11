@@ -54,7 +54,7 @@ def render_component_detail(component: dict, data: dict) -> None:
 
 
 def render_storage_detail(drives: list[dict]) -> None:
-    component = _component_by_key("storage")
+    component = storage.STORAGE_COMPONENT
     card_title(component["icon"], component["label"])
     if not drives:
         st.caption("Not recorded")

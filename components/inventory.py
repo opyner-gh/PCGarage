@@ -66,8 +66,9 @@ def _selected_detail(computers: list[dict]) -> None:
                 else:
                     widgets.card_title(storage.NOTES_ICON, "Notes")
                     notes = record.get("notes")
-                    st.write(notes if widgets.is_filled(notes) else "")
-                    if not widgets.is_filled(notes):
+                    if widgets.is_filled(notes):
+                        st.write(notes)
+                    else:
                         st.caption("Not recorded")
 
     # Storage spans full width — its drive table needs the room.
