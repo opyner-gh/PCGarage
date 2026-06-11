@@ -20,6 +20,19 @@ def render() -> None:
         st.info("No computers saved yet. Use the Add / Edit page to create one.")
         return
 
+    _selected_detail(computers)
+
+    st.divider()
+    st.subheader("All Computers")
+    table = pd.DataFrame([widgets.summary_row(c) for c in computers])
+    st.dataframe(table, width="stretch", hide_index=True)
+
+
+@st.fragment
+def _selected_detail(computers: list[dict]) -> None:
+    """Selector plus the detail cards, isolated in a fragment so picking a
+    different computer re-renders only this region — the page title above and
+    the summary table below stay put instead of reflowing."""
     def label(index: int) -> str:
         record = computers[index]
         name = record.get("computer_name") or "Unnamed Computer"
@@ -60,8 +73,3 @@ def render() -> None:
     # Storage spans full width — its drive table needs the room.
     with st.container(border=True):
         widgets.render_storage_detail(record.get("storage", []))
-
-    st.divider()
-    st.subheader("All Computers")
-    table = pd.DataFrame([widgets.summary_row(c) for c in computers])
-    st.dataframe(table, width="stretch", hide_index=True)

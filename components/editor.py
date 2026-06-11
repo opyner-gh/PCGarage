@@ -79,19 +79,30 @@ def render() -> None:
         st.error(f"Could not read saved computers: {error}")
         computers = []
 
+    _editor_form(computers)
+
+
+@st.fragment
+def _editor_form(computers: list[dict]) -> None:
+    """The mode picker and form, isolated in a fragment so switching mode or
+    computer re-renders only this region instead of reflowing the whole page."""
     if computers:
         mode = st.radio("Mode", ["Add new", "Edit existing"], horizontal=True)
-    else:
-        mode = "Add new"
-        st.info("Save at least one computer before you can edit.")
-
-    edit_index = None
-    if mode == "Edit existing" and computers:
-        edit_index = st.selectbox(
+        editing = mode == "Edit existing"
+        # Always render the picker (disabled in Add mode) so toggling modes
+        # never adds/removes a row and shifts the form below it.
+        selected = st.selectbox(
             "Computer to edit",
             options=list(range(len(computers))),
             format_func=lambda i: computers[i].get("computer_name") or "Unnamed",
+            disabled=not editing,
         )
+        edit_index = selected if editing else None
+    else:
+        edit_index = None
+        st.info("Save at least one computer before you can edit.")
+
+    if edit_index is not None:
         # Layer the stored record onto a complete skeleton so missing
         # component keys never KeyError, and deepcopy so editing does not
         # mutate the loaded list in place.
@@ -115,7 +126,7 @@ def render() -> None:
             st.error("Computer Name is required.")
             return
         try:
-            if mode == "Edit existing" and edit_index is not None:
+            if edit_index is not None:
                 storage.update_computer(edit_index, record)
                 st.success("Computer updated.")
             else:
