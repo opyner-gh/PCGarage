@@ -20,6 +20,7 @@ COMPONENTS = [
         "key": "cpu",
         "label": "CPU",
         "icon": "🧠",
+        "summary": True,
         "fields": [
             {"key": "manufacturer", "label": "Manufacturer", "widget": "select",
              "options": ["", "Intel", "AMD"]},
@@ -35,6 +36,7 @@ COMPONENTS = [
         "key": "ram",
         "label": "RAM",
         "icon": "🧩",
+        "summary": True,
         "fields": [
             {"key": "manufacturer", "label": "Manufacturer", "widget": "text"},
             {"key": "capacity_gb", "label": "Capacity (GB)", "widget": "number",
@@ -50,6 +52,7 @@ COMPONENTS = [
         "key": "gpu",
         "label": "GPU",
         "icon": "🎮",
+        "summary": True,
         "fields": [
             {"key": "manufacturer", "label": "Manufacturer", "widget": "select",
              "options": ["", "NVIDIA", "AMD", "Intel"]},
@@ -98,6 +101,8 @@ COMPONENTS = [
 
 SCALAR_COMPONENTS = [c for c in COMPONENTS if c["key"] != "storage"]
 STORAGE_COMPONENT = next(c for c in COMPONENTS if c["key"] == "storage")
+# Components shown as one-line columns in the inventory summary table.
+SUMMARY_COMPONENTS = [c for c in COMPONENTS if c.get("summary")]
 
 
 def _field_default(field: dict):

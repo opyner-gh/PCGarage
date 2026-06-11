@@ -18,6 +18,14 @@ def test_summarize_component_joins_present_fields():
     assert "None" not in text
 
 
+def test_summary_row_columns_follow_schema():
+    row = widgets.summary_row(storage.empty_computer())
+    expected = (["Computer"]
+                + [c["label"] for c in storage.SUMMARY_COMPONENTS]
+                + ["Drives", "Created At"])
+    assert list(row.keys()) == expected
+
+
 def test_summary_row_has_one_line_per_component_and_drive_count():
     record = storage.empty_computer()
     record["computer_name"] = "RIG"

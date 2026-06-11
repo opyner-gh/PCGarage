@@ -34,6 +34,10 @@ def test_empty_computer_skeleton():
     assert record["psu"]["wattage"] is None
 
 
+def test_summary_components_are_cpu_ram_gpu():
+    assert [c["key"] for c in storage.SUMMARY_COMPONENTS] == ["cpu", "ram", "gpu"]
+
+
 def test_integer_number_fields_flagged_in_schema():
     int_fields = {"cores", "threads", "capacity_gb", "speed_mhz", "vram_gb",
                   "wattage"}

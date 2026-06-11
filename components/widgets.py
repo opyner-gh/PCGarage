@@ -28,14 +28,13 @@ def summarize_component(key: str, data: dict) -> str:
 
 
 def summary_row(record: dict) -> dict:
-    return {
-        "Computer": record.get("computer_name", ""),
-        "CPU": summarize_component("cpu", record.get("cpu", {})),
-        "RAM": summarize_component("ram", record.get("ram", {})),
-        "GPU": summarize_component("gpu", record.get("gpu", {})),
-        "Drives": len(record.get("storage", [])),
-        "Created At": record.get("created_at", ""),
-    }
+    row = {"Computer": record.get("computer_name", "")}
+    for component in storage.SUMMARY_COMPONENTS:
+        key = component["key"]
+        row[component["label"]] = summarize_component(key, record.get(key, {}))
+    row["Drives"] = len(record.get("storage", []))
+    row["Created At"] = record.get("created_at", "")
+    return row
 
 
 def render_component_detail(component: dict, data: dict) -> None:
