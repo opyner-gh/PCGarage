@@ -1,0 +1,19 @@
+{
+  "computer_name": "Johns-Mac-mini",
+  "os": "macOS 14.5",
+  "cpu": {
+    "manufacturer": "", "model": "Apple M2", "cores": 8, "threads": 8,
+    "base_clock_ghz": null, "boost_clock_ghz": null, "cooler": ""
+  },
+  "ram": {
+    "manufacturer": "", "capacity_gb": 16, "speed_mhz": null,
+    "type": "", "configuration": ""
+  },
+  "gpu": {"manufacturer": "Apple", "model": "Apple M2", "vram_gb": null, "brand": ""},
+  "storage": [
+    {"manufacturer": "", "model": "APPLE SSD AP0512Z", "type": "NVMe SSD",
+     "capacity": "500.28 GB", "form_factor": ""}
+  ],
+  "motherboard": {"model": "", "form_factor": ""},
+  "psu": {"model": "", "wattage": null}
+}

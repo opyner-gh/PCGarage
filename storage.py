@@ -9,7 +9,7 @@ DATA_DIR = Path("data")
 JSON_PATH = DATA_DIR / "computers.json"
 CSV_PATH = DATA_DIR / "computers.csv"
 
-PAGE_ICONS = {"inventory": "📦", "editor": "✏️"}
+PAGE_ICONS = {"inventory": "📦", "editor": "✏️", "detect": "🔍"}
 COMPUTER_ICON = "🖥️"
 OS_ICON = "💿"
 NOTES_ICON = "📝"

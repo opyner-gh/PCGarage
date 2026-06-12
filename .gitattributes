@@ -1,0 +1,7 @@
+# Shell scripts MUST use LF, even on Windows checkouts. With CRLF, bash chokes
+# before running anything ("set: invalid option" on `set -u\r`, "syntax error
+# near unexpected token" on `esac\r`). eol=lf overrides core.autocrlf for these.
+*.sh text eol=lf
+
+# PowerShell runs fine with either ending; keep CRLF for Windows-native tools.
+*.ps1 text eol=crlf

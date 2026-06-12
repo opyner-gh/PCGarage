@@ -335,3 +335,99 @@ def test_inventory_renders_sparse_record(workspace):
     assert not at.exception
     # Empty components, drives, and notes all show the same "Not recorded" note.
     assert sum("Not recorded" in c.value for c in at.caption) >= 2
+
+
+DETECT_SCRIPT = "from components import detect\ndetect.render()"
+
+
+def test_detect_page_renders(workspace):
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    assert not at.exception
+    assert any("Detect" in t.value for t in at.title)
+
+
+def test_detect_empty_paste_shows_error(workspace):
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    at.button[0].click().run()
+    assert not at.exception
+    assert any("Paste" in e.value for e in at.error)
+
+
+def test_detect_invalid_json_shows_error(workspace):
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    at.text_area[0].set_value("not json").run()
+    at.button[0].click().run()
+    assert not at.exception
+    assert any("Couldn't read" in e.value for e in at.error)
+
+
+def test_detect_valid_paste_stashes_draft(workspace):
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    at.text_area[0].set_value(
+        '{"computer_name": "DET-PC", "cpu": {"model": "i7"}}').run()
+    at.button[0].click().run()
+    assert not at.exception
+    # No _pages registry in the isolated page test, so it falls back to a success
+    # message and leaves the draft for the editor to pick up.
+    assert at.session_state["detected_draft"]["computer_name"] == "DET-PC"
+    assert any("Add / Edit" in s.value for s in at.success)
+
+
+def test_detect_missing_script_shows_error(workspace, monkeypatch):
+    # Point the page at a scripts dir with no script file -> friendly error,
+    # not an unhandled FileNotFoundError.
+    monkeypatch.setattr("components.detect.SCRIPTS_DIR", workspace / "no-scripts")
+    at = AppTest.from_string(DETECT_SCRIPT).run()
+    assert not at.exception
+    assert any("missing" in e.value for e in at.error)
+
+
+def test_editor_prefills_from_detected_draft(workspace):
+    _seed(workspace, [])
+    draft = {**storage.empty_computer(),
+             "computer_name": "DETECTED-PC", "os": "Ubuntu 24.04"}
+    draft["cpu"]["model"] = "Core i7-12700"
+
+    at = AppTest.from_string(EDITOR_SCRIPT)
+    at.session_state["detected_draft"] = draft
+    at.run()
+
+    assert not at.exception
+    assert _name_input(at).value == "DETECTED-PC"
+    assert _os_input(at).value == "Ubuntu 24.04"
+    assert _field_input_value(at, "Model") == "Core i7-12700"   # CPU model prefilled
+    assert "detected_draft" not in at.session_state             # one-shot, consumed
+    assert at.session_state["editor_mode"] == "Add new"
+
+
+def test_editor_saves_detected_draft_then_resets(workspace):
+    _seed(workspace, [])
+    draft = {**storage.empty_computer(), "computer_name": "DET", "os": "Win 11"}
+
+    at = AppTest.from_string(EDITOR_SCRIPT)
+    at.session_state["detected_draft"] = draft
+    at.run()
+    at.button[0].click().run()
+
+    assert not at.exception
+    saved = storage.load_computers(path=workspace / "data" / "computers.json")
+    assert saved[0]["computer_name"] == "DET"
+    assert saved[0]["os"] == "Win 11"
+    assert "editor_draft" not in at.session_state   # cleared after save
+    assert _name_input(at).value == ""              # form reset for next entry
+
+
+def test_editor_prefills_draft_with_existing_computers(workspace):
+    # The realistic case: the user already has saved machines and a detected
+    # draft arrives — it must force Add mode and prefill, not edit a record.
+    _seed(workspace, SAMPLE)
+    draft = {**storage.empty_computer(), "computer_name": "NEW-PC"}
+
+    at = AppTest.from_string(EDITOR_SCRIPT)
+    at.session_state["detected_draft"] = draft
+    at.run()
+
+    assert not at.exception
+    assert at.session_state["editor_mode"] == "Add new"
+    assert _name_input(at).value == "NEW-PC"
+    assert "detected_draft" not in at.session_state

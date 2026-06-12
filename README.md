@@ -14,6 +14,8 @@ database or account required.
   CPU clocks, GPU VRAM, PSU wattage, motherboard form factor, and more.
 - **Dynamic storage**: add or remove as many drives per computer as the build needs.
 - Track each machine's **installed operating system** and free-form notes.
+- **Auto-detect** a machine's specs: run a detection script (Windows / Linux /
+  macOS) on the target PC and paste its output to pre-fill a new computer.
 - Dark "ops dashboard" theme (Fira Sans / Fira Code).
 - Data saved as nested JSON; a legacy `computers.csv` is migrated automatically
   on first run (and backed up to `computers.csv.bak`).
@@ -53,6 +55,28 @@ launch, any existing `data/computers.csv` is converted to JSON and the original
 is preserved as `data/computers.csv.bak`. The repo ships two sample computers so
 the app isn't empty on first run.
 
+## Auto-detecting specs
+
+Open the **🔍 Detect** page, pick the target machine's platform, and download (or
+copy) the detection script:
+
+- **Windows:** `scripts/detect-windows.ps1` — `powershell -ExecutionPolicy Bypass -File .\detect-windows.ps1`
+- **Linux:** `scripts/detect-linux.sh` — `bash detect-linux.sh` (run with `sudo` for RAM speed/type and board model)
+- **macOS:** `scripts/detect-macos.sh` — `bash detect-macos.sh`
+
+Run it on the target PC, copy the JSON it prints (also saved as
+`pcgarage-detected.json`), paste it into the Detect page, and click **Load into
+editor**. The Add / Edit form opens pre-filled for review. Some fields can't be
+detected — **PSU model/wattage** never, and GPU VRAM / form factors are
+best-effort — so review and fill those in before saving.
+
+> **Sending a script to another machine?** Attach it as a file (e.g. drag it into
+> chat) rather than pasting its contents. The repo keeps shell scripts LF-only via
+> `.gitattributes`, but a Windows editor or clipboard round-trip can convert them to
+> CRLF, which makes `bash` fail with `set: invalid option` / `syntax error`. If that
+> happens, the recipient can fix it with `dos2unix detect-linux.sh` (or
+> `sed -i 's/\r$//' detect-linux.sh`) before running.
+
 ## Running the tests
 
 The test tooling (pytest, coverage) lives in `requirements-dev.txt`, which also
@@ -75,10 +99,14 @@ python -m coverage run --source=. --omit="tests/*" -m pytest && python -m covera
 |------|----------------|
 | `app.py` | Entry point: page config, startup migration, navigation |
 | `storage.py` | Component schema + JSON load/save/migrate (pure logic, no Streamlit) |
+| `detection.py` | Parse + normalize pasted detector output (pure logic, no Streamlit) |
 | `components/inventory.py` | The Inventory page |
 | `components/editor.py` | The Add / Edit page |
+| `components/detect.py` | The Detect page (script delivery + import) |
 | `components/widgets.py` | Shared render/format helpers |
+| `scripts/` | Per-platform hardware detection scripts (Windows / Linux / macOS) |
 | `.streamlit/config.toml` | Theme |
-| `tests/` | Unit + page (AppTest) tests |
+| `.gitattributes` | Forces shell scripts to LF so they run on Linux / macOS |
+| `tests/` | Unit + page (AppTest) tests, plus per-platform detector fixtures |
 | `requirements.txt` | Runtime dependencies (Streamlit, pandas) |
 | `requirements-dev.txt` | Test dependencies (pytest, coverage) + the runtime deps |

@@ -1,0 +1,25 @@
+{
+  "computer_name": "ubuntu-box",
+  "os": "Ubuntu 24.04.1 LTS",
+  "cpu": {
+    "manufacturer": "Intel",
+    "model": "Intel(R) Core(TM) i5-10400 CPU @ 2.90GHz",
+    "cores": 6, "threads": 12, "base_clock_ghz": 4.3,
+    "boost_clock_ghz": null, "cooler": ""
+  },
+  "ram": {
+    "manufacturer": "", "capacity_gb": 16, "speed_mhz": 2666,
+    "type": "DDR4", "configuration": "2 modules"
+  },
+  "gpu": {
+    "manufacturer": "NVIDIA",
+    "model": "NVIDIA Corporation GA106 [GeForce RTX 3060]",
+    "vram_gb": null, "brand": ""
+  },
+  "storage": [
+    {"manufacturer": "", "model": "Samsung SSD 870 EVO 500GB",
+     "type": "SATA SSD", "capacity": "465.8G", "form_factor": ""}
+  ],
+  "motherboard": {"model": "PRIME B460M-A", "form_factor": ""},
+  "psu": {"model": "", "wattage": null}
+}
