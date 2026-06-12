@@ -70,6 +70,13 @@ editor**. The Add / Edit form opens pre-filled for review. Some fields can't be
 detected — **PSU model/wattage** never, and GPU VRAM / form factors are
 best-effort — so review and fill those in before saving.
 
+> **Sending a script to another machine?** Attach it as a file (e.g. drag it into
+> chat) rather than pasting its contents. The repo keeps shell scripts LF-only via
+> `.gitattributes`, but a Windows editor or clipboard round-trip can convert them to
+> CRLF, which makes `bash` fail with `set: invalid option` / `syntax error`. If that
+> happens, the recipient can fix it with `dos2unix detect-linux.sh` (or
+> `sed -i 's/\r$//' detect-linux.sh`) before running.
+
 ## Running the tests
 
 The test tooling (pytest, coverage) lives in `requirements-dev.txt`, which also
@@ -92,13 +99,14 @@ python -m coverage run --source=. --omit="tests/*" -m pytest && python -m covera
 |------|----------------|
 | `app.py` | Entry point: page config, startup migration, navigation |
 | `storage.py` | Component schema + JSON load/save/migrate (pure logic, no Streamlit) |
+| `detection.py` | Parse + normalize pasted detector output (pure logic, no Streamlit) |
 | `components/inventory.py` | The Inventory page |
 | `components/editor.py` | The Add / Edit page |
+| `components/detect.py` | The Detect page (script delivery + import) |
 | `components/widgets.py` | Shared render/format helpers |
+| `scripts/` | Per-platform hardware detection scripts (Windows / Linux / macOS) |
 | `.streamlit/config.toml` | Theme |
-| `tests/` | Unit + page (AppTest) tests |
+| `.gitattributes` | Forces shell scripts to LF so they run on Linux / macOS |
+| `tests/` | Unit + page (AppTest) tests, plus per-platform detector fixtures |
 | `requirements.txt` | Runtime dependencies (Streamlit, pandas) |
 | `requirements-dev.txt` | Test dependencies (pytest, coverage) + the runtime deps |
-| `components/detect.py` | The Detect page (script delivery + import) |
-| `detection.py` | Parse + normalize pasted detector output (no Streamlit) |
-| `scripts/` | Per-platform hardware detection scripts |
